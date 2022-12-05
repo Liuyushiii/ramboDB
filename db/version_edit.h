@@ -27,6 +27,7 @@ struct FileMetaData {
   InternalKey largest;   // Largest internal key served by table
   int highest_bid;  //hightest block height served by table
   int lowest_bid;   //lowest block height served by table
+  int epoch_id;
 };
 
 class VersionEdit {
@@ -73,7 +74,7 @@ class VersionEdit {
     f.largest = largest;
     f.highest_bid=highest_bid;
     f.lowest_bid=lowest_bid;
-    std::cout<<"ADDFILE:"<<highest_bid<<" "<<lowest_bid<<std::endl;
+    std::cout<<"ADDFILE:"<<lowest_bid<<"-"<<highest_bid<<std::endl;
     new_files_.push_back(std::make_pair(level, f));
   }
 

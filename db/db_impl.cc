@@ -506,8 +506,16 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
                                 Version* base) {
   mutex_.AssertHeld();
   const uint64_t start_micros = env_->NowMicros();
+  //DTODO:Epoch更换
+  if(base->epoches_.empty() || base->epoches_.back()->Full()){
+    base->epoches_.push_back(new Epoch(base->epoches_.size()));
+  }
+  Epoch* cur_epoch=base->epoches_.back();
   FileMetaData meta;
+  meta.epoch_id=cur_epoch->epoch_id_;
   meta.number = versions_->NewFileNumber();
+  meta.highest_bid=mem->highest_bid;
+  meta.lowest_bid=mem->lowest_bid;
   pending_outputs_.insert(meta.number);
   Iterator* iter = mem->NewIterator();
   Log(options_.info_log, "Level-0 table #%llu: started",
@@ -516,7 +524,7 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
   Status s;
   {
     mutex_.Unlock();
-    s = BuildTable(dbname_, env_, options_, table_cache_, iter, &meta);
+    s = BuildTable(dbname_, env_, options_, table_cache_, iter, &meta, cur_epoch);
     mutex_.Lock();
   }
 

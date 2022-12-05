@@ -11,11 +11,12 @@
 #include "leveldb/db.h"
 #include "leveldb/env.h"
 #include "leveldb/iterator.h"
+#include "db/version_set.h"
 
 namespace leveldb {
 
 Status BuildTable(const std::string& dbname, Env* env, const Options& options,
-                  TableCache* table_cache, Iterator* iter, FileMetaData* meta) {
+                  TableCache* table_cache, Iterator* iter, FileMetaData* meta, Epoch* cur_epoch) {
   Status s;
   meta->file_size = 0;
   iter->SeekToFirst();
@@ -27,13 +28,16 @@ Status BuildTable(const std::string& dbname, Env* env, const Options& options,
     if (!s.ok()) {
       return s;
     }
-    //DTODO:过滤器替换
+
     TableBuilder* builder = new TableBuilder(options, file);
     meta->smallest.DecodeFrom(iter->key());
     Slice key;
     for (; iter->Valid(); iter->Next()) {
       key = iter->key();
       builder->Add(key, iter->value());
+      if(cur_epoch!=nullptr){ //DTODO:RAMBO插入逻辑
+        cur_epoch->AddItem(key.ToString(),meta->number); 
+      }
     }
     if (!key.empty()) {
       meta->largest.DecodeFrom(key);
@@ -46,6 +50,10 @@ Status BuildTable(const std::string& dbname, Env* env, const Options& options,
       assert(meta->file_size > 0);
     }
     delete builder;
+
+    if(cur_epoch!=nullptr){
+      cur_epoch->AddFile(meta);
+    }
 
     // Finish and check for file errors
     if (s.ok()) {

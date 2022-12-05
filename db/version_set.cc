@@ -279,25 +279,40 @@ static bool NewestFirst(FileMetaData* a, FileMetaData* b) {
 }
 
 void Version::ForEachOverlapping(Slice user_key, Slice internal_key, void* arg,
-                                 bool (*func)(void*, int, FileMetaData*)) {
+                                 bool (*func)(void*, int, FileMetaData*),int min_height=INT32_MIN,int max_heigth=INT32_MAX) {
   const Comparator* ucmp = vset_->icmp_.user_comparator();
 
   // Search level-0 in order from newest to oldest.
-  std::vector<FileMetaData*> tmp;
-  tmp.reserve(files_[0].size());
-  for (uint32_t i = 0; i < files_[0].size(); i++) {
-    FileMetaData* f = files_[0][i];
-    //DTODO:根据区块范围判断
-    if (ucmp->Compare(user_key, f->smallest.user_key()) >= 0 &&
-        ucmp->Compare(user_key, f->largest.user_key()) <= 0) {
-      tmp.push_back(f);
-    }
+  std::vector<Epoch*> tmp;
+  tmp.reserve(epoches_.size());
+  //DTODO:根据区块范围判断
+  for(uint32_t i=0;i<epoches_.size();++i){
+    int lowest_bid=epoches_[i]->lowest_bid;
+    int highest_bid=epoches_[i]->highest_bid;
+
+    if((lowest_bid<=min_height && min_height<=highest_bid) 
+        ||(lowest_bid<=max_heigth && max_heigth<=highest_bid)){
+          tmp.push_back(epoches_[i]);
+        }
   }
+
+  // std::vector<FileMetaData*> tmp;
+  // tmp.reserve(files_[0].size());
+  // for (uint32_t i = 0; i < files_[0].size(); i++) {
+  //   FileMetaData* f = files_[0][i];
+  //   
+  //   if (ucmp->Compare(user_key, f->smallest.user_key()) >= 0 &&
+  //       ucmp->Compare(user_key, f->largest.user_key()) <= 0) {
+  //     tmp.push_back(f);
+  //   }
+  // }
   if (!tmp.empty()) {
-    std::sort(tmp.begin(), tmp.end(), NewestFirst);
+    // std::sort(tmp.begin(), tmp.end(), NewestFirst);
     for (uint32_t i = 0; i < tmp.size(); i++) {
-      if (!(*func)(arg, 0, tmp[i])) {
-        return;
+      for(uint32_t j=0;j<=tmp[i]->files_.size();j++){
+        if (!(*func)(arg, 0, tmp[i]->files_[j])) {
+          return;
+        }
       }
     }
   }
@@ -584,7 +599,18 @@ class VersionSet::Builder {
     }
   };
 
-  typedef std::set<FileMetaData*, BySmallestKey> FileSet;
+  struct BySmallestHeight{
+    bool operator()(FileMetaData* f1, FileMetaData* f2) const {
+      int r=f1->lowest_bid-f2->lowest_bid;
+      if(r!=0){
+        return (r<0);
+      }else{
+        return (f1->number<f2->number);
+      }
+    }
+  };
+
+  typedef std::set<FileMetaData*, BySmallestHeight> FileSet;
   struct LevelState {
     std::set<uint64_t> deleted_files;
     FileSet* added_files;
@@ -598,8 +624,8 @@ class VersionSet::Builder {
   // Initialize a builder with the files from *base and other info from *vset
   Builder(VersionSet* vset, Version* base) : vset_(vset), base_(base) {
     base_->Ref();
-    BySmallestKey cmp;
-    cmp.internal_comparator = &vset_->icmp_;
+    BySmallestHeight cmp;
+    // cmp.internal_comparator = &vset_->icmp_;
     for (int level = 0; level < config::kNumLevels; level++) {
       levels_[level].added_files = new FileSet(cmp);
     }
@@ -671,8 +697,15 @@ class VersionSet::Builder {
 
   // Save the current state in *v.
   void SaveTo(Version* v) {
-    BySmallestKey cmp;
-    cmp.internal_comparator = &vset_->icmp_;
+    // BySmallestKey cmp;
+    // cmp.internal_comparator = &vset_->icmp_;
+    
+    //DTODO:拷贝Epoch的修改
+    for(const auto& epoch:base_->epoches_){
+      v->epoches_.emplace_back(epoch);
+    }
+
+    BySmallestHeight cmp;
     for (int level = 0; level < config::kNumLevels; level++) {
       // Merge the set of added files with the set of pre-existing files.
       // Drop any deleted files.  Store the result in *v.
@@ -697,21 +730,21 @@ class VersionSet::Builder {
         MaybeAddFile(v, level, *base_iter);
       }
 
-#ifndef NDEBUG
-      // Make sure there is no overlap in levels > 0
-      if (level > 0) {
-        for (uint32_t i = 1; i < v->files_[level].size(); i++) {
-          const InternalKey& prev_end = v->files_[level][i - 1]->largest;
-          const InternalKey& this_begin = v->files_[level][i]->smallest;
-          if (vset_->icmp_.Compare(prev_end, this_begin) >= 0) {
-            std::fprintf(stderr, "overlapping ranges in same level %s vs. %s\n",
-                         prev_end.DebugString().c_str(),
-                         this_begin.DebugString().c_str());
-            std::abort();
-          }
-        }
-      }
-#endif
+// #ifndef NDEBUG
+//       // Make sure there is no overlap in levels > 0
+//       if (level > 0) {
+//         for (uint32_t i = 1; i < v->files_[level].size(); i++) {
+//           const InternalKey& prev_end = v->files_[level][i - 1]->largest;
+//           const InternalKey& this_begin = v->files_[level][i]->smallest;
+//           if (vset_->icmp_.Compare(prev_end, this_begin) >= 0) {
+//             std::fprintf(stderr, "overlapping ranges in same level %s vs. %s\n",
+//                          prev_end.DebugString().c_str(),
+//                          this_begin.DebugString().c_str());
+//             std::abort();
+//           }
+//         }
+//       }
+// #endif
     }
   }
 
@@ -720,11 +753,11 @@ class VersionSet::Builder {
       // File is deleted: do nothing
     } else {
       std::vector<FileMetaData*>* files = &v->files_[level];
-      if (level > 0 && !files->empty()) {
-        // Must not overlap
-        assert(vset_->icmp_.Compare((*files)[files->size() - 1]->largest,
-                                    f->smallest) < 0);
-      }
+      // if (level > 0 && !files->empty()) {
+      //   // Must not overlap
+      //   assert(vset_->icmp_.Compare((*files)[files->size() - 1]->largest,
+      //                               f->smallest) < 0);
+      // }
       f->refs++;
       files->push_back(f);
     }
@@ -1100,18 +1133,26 @@ Status VersionSet::WriteSnapshot(log::Writer* log) {
 int VersionSet::NumLevelFiles(int level) const {
   assert(level >= 0);
   assert(level < config::kNumLevels);
+  std::cout<<"Epoch Size:"<<current_->epoches_.size()<<std::endl;
+  if(!current_->epoches_.empty()){
+    std::cout<<"range:"<<current_->epoches_.back()->lowest_bid<<"-"<<current_->epoches_.back()->highest_bid<<std::endl;
+  }
+  
   return current_->files_[level].size();
 }
 
 const char* VersionSet::LevelSummary(LevelSummaryStorage* scratch) const {
   // Update code if kNumLevels changes
-  static_assert(config::kNumLevels == 7, "");
-  std::snprintf(
-      scratch->buffer, sizeof(scratch->buffer), "files[ %d %d %d %d %d %d %d ]",
-      int(current_->files_[0].size()), int(current_->files_[1].size()),
-      int(current_->files_[2].size()), int(current_->files_[3].size()),
-      int(current_->files_[4].size()), int(current_->files_[5].size()),
-      int(current_->files_[6].size()));
+  static_assert(config::kNumLevels == 1, "");
+  // std::snprintf(
+  //     scratch->buffer, sizeof(scratch->buffer), "files[ %d %d %d %d %d %d %d ]",
+  //     int(current_->files_[0].size()), int(current_->files_[1].size()),
+  //     int(current_->files_[2].size()), int(current_->files_[3].size()),
+  //     int(current_->files_[4].size()), int(current_->files_[5].size()),
+  //     int(current_->files_[6].size()));
+    std::snprintf(
+      scratch->buffer, sizeof(scratch->buffer), "files[ %d ]",
+      int(current_->files_[0].size()));
   return scratch->buffer;
 }
 

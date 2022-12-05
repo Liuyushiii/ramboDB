@@ -35,8 +35,8 @@ WriteBatch::Handler::~Handler() = default;
 void WriteBatch::Clear() {
   rep_.clear();
   rep_.resize(kHeader);
-  highest_bid=INT32_MIN;
-  lowest_bid=INT32_MAX;
+  highest_bid_=INT32_MIN;
+  lowest_bid_=INT32_MAX;
 }
 
 size_t WriteBatch::ApproximateSize() const { return rep_.size(); }
@@ -102,8 +102,8 @@ void WriteBatch::Put(const Slice& key, const Slice& value,int bid) {
   rep_.push_back(static_cast<char>(kTypeValue));
   PutLengthPrefixedSlice(&rep_, key);
   PutLengthPrefixedSlice(&rep_, value);
-  lowest_bid=std::min(bid,lowest_bid);
-  highest_bid=std::max(bid,highest_bid);
+  lowest_bid_=std::min(bid,lowest_bid_);
+  highest_bid_=std::max(bid,highest_bid_);
 }
 
 void WriteBatch::Delete(const Slice& key) {
@@ -137,8 +137,8 @@ Status WriteBatchInternal::InsertInto(const WriteBatch* b, MemTable* memtable) {
   MemTableInserter inserter;
   inserter.sequence_ = WriteBatchInternal::Sequence(b);
   inserter.mem_ = memtable;
-  memtable->highest_bid=std::max(memtable->highest_bid,b->highest_bid);
-  memtable->lowest_bid=std::min(memtable->lowest_bid,b->lowest_bid);
+  memtable->highest_bid=std::max(memtable->highest_bid,b->highest_bid_);
+  memtable->lowest_bid=std::min(memtable->lowest_bid,b->lowest_bid_);
   return b->Iterate(&inserter);
 }
 

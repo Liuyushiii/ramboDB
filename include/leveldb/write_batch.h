@@ -75,8 +75,8 @@ class LEVELDB_EXPORT WriteBatch {
 
  private:
   friend class WriteBatchInternal;
-  int highest_bid;  //hightest block height served by table
-  int lowest_bid;   //lowest block height served by table
+  int highest_bid_;  //hightest block height served by table
+  int lowest_bid_;   //lowest block height served by table
   std::string rep_;  // See comment in write_batch.cc for the format of rep_
 };
 

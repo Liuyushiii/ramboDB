@@ -23,6 +23,7 @@
 #include "db/version_edit.h"
 #include "port/port.h"
 #include "port/thread_annotations.h"
+#include "rambo/Rambo_construction.h"
 
 namespace leveldb {
 
@@ -56,6 +57,35 @@ bool SomeFileOverlapsRange(const InternalKeyComparator& icmp,
                            const std::vector<FileMetaData*>& files,
                            const Slice* smallest_user_key,
                            const Slice* largest_user_key);
+
+struct Epoch{
+  RAMBO* rambo_filter_;
+  std::vector<FileMetaData*> files_;
+  int cur_count_,max_count_;
+  int epoch_id_;
+  int highest_bid;  //hightest block height served by table
+  int lowest_bid;   //lowest block height served by table
+
+  Epoch(int epoch_id,int maxCount=100000)
+      :cur_count_(0),max_count_(maxCount),epoch_id_(epoch_id),highest_bid(INT32_MIN),lowest_bid(INT32_MAX){}
+
+  bool Full(){
+    return cur_count_>=max_count_;
+  }
+
+  void AddFile(FileMetaData* file){
+    files_.push_back(file);
+    highest_bid=std::max(highest_bid,file->highest_bid);
+    lowest_bid=std::min(lowest_bid,file->lowest_bid);
+  }
+
+  void AddItem(const std::string& user_key,int file_id){
+    // rambo_filter_->createMetaRambo_single(fileIndex);
+    // rambo_filter_->insertion_pair(std::pair<std::string,std::string>(user_key,std::to_string(fileIndex)));
+    cur_count_++;
+  }
+};
+
 
 class Version {
  public:
@@ -113,6 +143,7 @@ class Version {
 
   // Return a human readable string that describes this version's contents.
   std::string DebugString() const;
+  std::vector<Epoch*> epoches_;
 
  private:
   friend class Compaction;
@@ -143,7 +174,7 @@ class Version {
   //
   // REQUIRES: user portion of internal_key == user_key.
   void ForEachOverlapping(Slice user_key, Slice internal_key, void* arg,
-                          bool (*func)(void*, int, FileMetaData*));
+                          bool (*func)(void*, int, FileMetaData*),int min_height,int max_height);
 
   VersionSet* vset_;  // VersionSet to which this Version belongs
   Version* next_;     // Next version in linked list
@@ -152,6 +183,7 @@ class Version {
 
   // List of files per level
   //DTODO:Epoch相关数据
+
   std::vector<FileMetaData*> files_[config::kNumLevels];
 
   // Next file to compact based on seek stats.

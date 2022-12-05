@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <boost/dynamic_bitset.hpp>
+#include "MyBloom.h"
 
 // vector<uint> hashfunc( void* key, int len, int R, int B){
 // }

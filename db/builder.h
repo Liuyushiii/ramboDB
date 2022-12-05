@@ -11,6 +11,7 @@ namespace leveldb {
 
 struct Options;
 struct FileMetaData;
+struct Epoch;
 
 class Env;
 class Iterator;
@@ -23,7 +24,7 @@ class VersionEdit;
 // If no data is present in *iter, meta->file_size will be set to
 // zero, and no Table file will be produced.
 Status BuildTable(const std::string& dbname, Env* env, const Options& options,
-                  TableCache* table_cache, Iterator* iter, FileMetaData* meta);
+                  TableCache* table_cache, Iterator* iter, FileMetaData* meta,Epoch* cur_epoch=nullptr);
 
 }  // namespace leveldb
 

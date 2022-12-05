@@ -76,9 +76,10 @@ int main(int argc, char** argv) {
   std::cout<<"3"<<std::endl;
   std::string db_state;
   for(int i=0;i<10000;++i){
-    generateWriteBatch(1000,i,batch1);
+    generateWriteBatch(10000,i,batch1);
     db->Write(leveldb::WriteOptions(),&batch1);
     db->GetProperty("leveldb.stats", &db_state);
+    batch1.Clear();
     std::cout<<i<<db_state<<std::endl;
   }
   std::cout<<"4:"<<s.ToString()<<std::endl;
