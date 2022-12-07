@@ -15,6 +15,7 @@ class bitArray{
         void ClearBit( uint k);
         bool TestBit( uint k);
         void ANDop(char* B);
+        void ORop(char* B);
         void serializeBitAr(std::string BF_file);
         void deserializeBitAr(std::vector<std::string> BF_file);
         int getcount(void);

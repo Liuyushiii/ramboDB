@@ -16,7 +16,7 @@
 namespace leveldb {
 
 Status BuildTable(const std::string& dbname, Env* env, const Options& options,
-                  TableCache* table_cache, Iterator* iter, FileMetaData* meta, Epoch* cur_epoch) {
+                  TableCache* table_cache, Iterator* iter, FileMetaData* meta) {
   Status s;
   meta->file_size = 0;
   iter->SeekToFirst();
@@ -29,15 +29,17 @@ Status BuildTable(const std::string& dbname, Env* env, const Options& options,
       return s;
     }
 
+    meta->filter_=new RAMBO(100000,3,10,50,0);
+    meta->filter_->createMetaRambo_single(meta->number);
     TableBuilder* builder = new TableBuilder(options, file);
     meta->smallest.DecodeFrom(iter->key());
     Slice key;
     for (; iter->Valid(); iter->Next()) {
       key = iter->key();
       builder->Add(key, iter->value());
-      if(cur_epoch!=nullptr){ //DTODO:RAMBO插入逻辑
-        cur_epoch->AddItem(key.ToString(),meta->number); 
-      }
+      //DTODO:RAMBO插入逻辑
+      meta->filter_->insertion_pair(
+        std::make_pair<std::string,std::string>(ExtractUserKey(key).ToString(),std::to_string(meta->number)));
     }
     if (!key.empty()) {
       meta->largest.DecodeFrom(key);
@@ -50,10 +52,6 @@ Status BuildTable(const std::string& dbname, Env* env, const Options& options,
       assert(meta->file_size > 0);
     }
     delete builder;
-
-    if(cur_epoch!=nullptr){
-      cur_epoch->AddFile(meta);
-    }
 
     // Finish and check for file errors
     if (s.ok()) {

@@ -268,7 +268,8 @@ static void SaveValue(void* arg, const Slice& ikey, const Slice& v) {
     if (s->ucmp->Compare(parsed_key.user_key, s->user_key) == 0) {
       s->state = (parsed_key.type == kTypeValue) ? kFound : kDeleted;
       if (s->state == kFound) {
-        s->value->assign(v.data(), v.size());
+        // s->value->assign(v.data(), v.size());
+        s->value->append(v.data(),v.size());
       }
     }
   }
@@ -281,9 +282,10 @@ static bool NewestFirst(FileMetaData* a, FileMetaData* b) {
 void Version::ForEachOverlapping(Slice user_key, Slice internal_key, void* arg,
                                  bool (*func)(void*, int, FileMetaData*),int min_height=INT32_MIN,int max_heigth=INT32_MAX) {
   const Comparator* ucmp = vset_->icmp_.user_comparator();
-
+  std::cout<<"BEGIN ForEachOverlapping:"<<user_key.ToString()<<":"<<min_height<<"-"<<max_heigth<<std::endl;
   // Search level-0 in order from newest to oldest.
-  std::vector<Epoch*> tmp;
+  std::vector<FileMetaData*> tmp;
+  // std::vector<Epoch*> tmp;
   tmp.reserve(epoches_.size());
   //DTODO:根据区块范围判断
   for(uint32_t i=0;i<epoches_.size();++i){
@@ -292,11 +294,16 @@ void Version::ForEachOverlapping(Slice user_key, Slice internal_key, void* arg,
 
     if((lowest_bid<=min_height && min_height<=highest_bid) 
         ||(lowest_bid<=max_heigth && max_heigth<=highest_bid)){
-          tmp.push_back(epoches_[i]);
+          auto epoch_file=epoches_[i]->FilterKey(user_key.ToString());
+          std::cout<<"Epoch Overlapping:"<<i<<":"<<lowest_bid<<"-"<<highest_bid<<std::endl;
+          std::cout<<"    Filter size:"<<epoch_file.size()<<std::endl;
+          for(FileMetaData* file_meta:epoch_file){
+            tmp.push_back(file_meta);
+          }
         }
   }
 
-  // std::vector<FileMetaData*> tmp;
+  
   // tmp.reserve(files_[0].size());
   // for (uint32_t i = 0; i < files_[0].size(); i++) {
   //   FileMetaData* f = files_[0][i];
@@ -308,11 +315,10 @@ void Version::ForEachOverlapping(Slice user_key, Slice internal_key, void* arg,
   // }
   if (!tmp.empty()) {
     // std::sort(tmp.begin(), tmp.end(), NewestFirst);
+    std::cout<<"ForEachOverlapping:"<<tmp.size()<<std::endl;
     for (uint32_t i = 0; i < tmp.size(); i++) {
-      for(uint32_t j=0;j<=tmp[i]->files_.size();j++){
-        if (!(*func)(arg, 0, tmp[i]->files_[j])) {
-          return;
-        }
+      if (!(*func)(arg, 0, tmp[i])) {
+        return;
       }
     }
   }
@@ -379,7 +385,8 @@ Status Version::Get(const ReadOptions& options, const LookupKey& k,
           return true;  // Keep searching in other files
         case kFound:
           state->found = true;
-          return false;
+          // return false;
+          return true;
         case kDeleted:
           return false;
         case kCorrupt:
@@ -410,7 +417,8 @@ Status Version::Get(const ReadOptions& options, const LookupKey& k,
   state.saver.user_key = k.user_key();
   state.saver.value = value;
 
-  ForEachOverlapping(state.saver.user_key, state.ikey, &state, &State::Match);
+  ForEachOverlapping(state.saver.user_key, state.ikey, &state, &State::Match, 
+                      options.min_height, options.max_height);
 
   return state.found ? state.s : Status::NotFound(Slice());
 }
@@ -699,36 +707,56 @@ class VersionSet::Builder {
   void SaveTo(Version* v) {
     // BySmallestKey cmp;
     // cmp.internal_comparator = &vset_->icmp_;
-    
-    //DTODO:拷贝Epoch的修改
-    for(const auto& epoch:base_->epoches_){
-      v->epoches_.emplace_back(epoch);
+
+    //DTODO:Epoch修改
+    v->epoches_=base_->epoches_;
+    if(v->epoches_.empty() || v->epoches_.back()->Full()){
+      v->epoches_.push_back(new Epoch(v->epoches_.size()));
+    }
+    Epoch* cur_epoch=v->epoches_.back();
+
+    const FileSet* added_files = levels_[0].added_files;
+    const std::vector<FileMetaData*>& base_files = base_->files_[0];
+    v->files_[0].reserve(base_files.size() + added_files->size());
+    for (const auto& base_file : base_files){
+      MaybeAddFile(v,0,base_file);
     }
 
-    BySmallestHeight cmp;
-    for (int level = 0; level < config::kNumLevels; level++) {
-      // Merge the set of added files with the set of pre-existing files.
-      // Drop any deleted files.  Store the result in *v.
-      const std::vector<FileMetaData*>& base_files = base_->files_[level];
-      std::vector<FileMetaData*>::const_iterator base_iter = base_files.begin();
-      std::vector<FileMetaData*>::const_iterator base_end = base_files.end();
-      const FileSet* added_files = levels_[level].added_files;
-      v->files_[level].reserve(base_files.size() + added_files->size());
-      for (const auto& added_file : *added_files) {
-        // Add all smaller files listed in base_
-        for (std::vector<FileMetaData*>::const_iterator bpos =
-                 std::upper_bound(base_iter, base_end, added_file, cmp);
-             base_iter != bpos; ++base_iter) {
-          MaybeAddFile(v, level, *base_iter);
-        }
-
-        MaybeAddFile(v, level, added_file);
+    for (const auto& added_file : *added_files) {
+      MaybeAddFile(v,0,added_file);
+      if(!cur_epoch->Full()){
+        cur_epoch->AppendFile(added_file);
+      }else{
+        v->epoches_.push_back(new Epoch(v->epoches_.size()));
+        cur_epoch=v->epoches_.back();
       }
+    }
+    
 
-      // Add remaining base files
-      for (; base_iter != base_end; ++base_iter) {
-        MaybeAddFile(v, level, *base_iter);
-      }
+    // BySmallestHeight cmp;
+    // for (int level = 0; level < config::kNumLevels; level++) {
+    //   // Merge the set of added files with the set of pre-existing files.
+    //   // Drop any deleted files.  Store the result in *v.
+    //   const std::vector<FileMetaData*>& base_files = base_->files_[level];
+    //   std::vector<FileMetaData*>::const_iterator base_iter = base_files.begin();
+    //   std::vector<FileMetaData*>::const_iterator base_end = base_files.end();
+    //   const FileSet* added_files = levels_[level].added_files;
+    //   v->files_[level].reserve(base_files.size() + added_files->size());
+    //   for (const auto& added_file : *added_files) {
+    //     // Add all smaller files listed in base_
+    //     for (std::vector<FileMetaData*>::const_iterator bpos =
+    //              std::upper_bound(base_iter, base_end, added_file, cmp);
+    //          base_iter != bpos; ++base_iter) {
+    //       MaybeAddFile(v, level, *base_iter);
+    //     }
+
+    //     MaybeAddFile(v, level, added_file);
+    //   }
+    // }
+    //   // Add remaining base files
+    //   for (; base_iter != base_end; ++base_iter) {
+    //     MaybeAddFile(v, level, *base_iter);
+    //   }
 
 // #ifndef NDEBUG
 //       // Make sure there is no overlap in levels > 0
@@ -745,7 +773,7 @@ class VersionSet::Builder {
 //         }
 //       }
 // #endif
-    }
+    // }
   }
 
   void MaybeAddFile(Version* v, int level, FileMetaData* f) {

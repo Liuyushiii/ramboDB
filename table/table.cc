@@ -15,6 +15,7 @@
 #include "table/two_level_iterator.h"
 #include "util/coding.h"
 
+#include <iostream>
 namespace leveldb {
 
 struct Table::Rep {
@@ -217,11 +218,11 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
   Status s;
   Iterator* iiter = rep_->index_block->NewIterator(rep_->options.comparator);
   iiter->Seek(k);
+  std::cout<<"InternalGet:"<<k.ToString()<<std::endl;
   if (iiter->Valid()) {
     Slice handle_value = iiter->value();
     FilterBlockReader* filter = rep_->filter;
     BlockHandle handle;
-    //DTODO:过滤器查询相关
     if (filter != nullptr && handle.DecodeFrom(&handle_value).ok() &&
         !filter->KeyMayMatch(handle.offset(), k)) {
       // Not found

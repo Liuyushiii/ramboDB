@@ -18,6 +18,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <unordered_map>
 
 #include "db/dbformat.h"
 #include "db/version_edit.h"
@@ -60,29 +61,46 @@ bool SomeFileOverlapsRange(const InternalKeyComparator& icmp,
 
 struct Epoch{
   RAMBO* rambo_filter_;
-  std::vector<FileMetaData*> files_;
+  // std::vector<FileMetaData*> files_;
+  std::unordered_map<int,FileMetaData*> files_;
   int cur_count_,max_count_;
   int epoch_id_;
   int highest_bid;  //hightest block height served by table
   int lowest_bid;   //lowest block height served by table
 
   Epoch(int epoch_id,int maxCount=100000)
-      :cur_count_(0),max_count_(maxCount),epoch_id_(epoch_id),highest_bid(INT32_MIN),lowest_bid(INT32_MAX){}
-
-  bool Full(){
-    return cur_count_>=max_count_;
+      :cur_count_(0),max_count_(maxCount),epoch_id_(epoch_id),highest_bid(INT32_MIN),lowest_bid(INT32_MAX){
+    rambo_filter_=new RAMBO(max_count_,3,10,100,0);
   }
 
-  void AddFile(FileMetaData* file){
-    files_.push_back(file);
+  bool Full(){
+    // return cur_count_>=max_count_;
+    return files_.size()>=10;
+  }
+
+  void AppendFile(FileMetaData* file){
+    files_[file->number]=file;
+    rambo_filter_->merge_another_rambo(*file->filter_);
+    delete file->filter_;
     highest_bid=std::max(highest_bid,file->highest_bid);
     lowest_bid=std::min(lowest_bid,file->lowest_bid);
   }
 
-  void AddItem(const std::string& user_key,int file_id){
+  void AddNewFileItem(const std::string& user_key){
     // rambo_filter_->createMetaRambo_single(fileIndex);
-    // rambo_filter_->insertion_pair(std::pair<std::string,std::string>(user_key,std::to_string(fileIndex)));
+    int file_id=files_.size();
+    rambo_filter_->insertion_pair(std::pair<std::string,std::string>(user_key,std::to_string(file_id)));
     cur_count_++;
+  }
+
+  std::vector<FileMetaData*> FilterKey(const std::string& user_key){
+    std::set<int> query_res=rambo_filter_->query_bias_set(user_key,user_key.size());
+    std::vector<FileMetaData*> res;
+    for(auto& fid:query_res){
+      res.emplace_back(files_[fid]);
+    }
+    // return res;
+    return res;
   }
 };
 
@@ -143,7 +161,7 @@ class Version {
 
   // Return a human readable string that describes this version's contents.
   std::string DebugString() const;
-  std::vector<Epoch*> epoches_;
+
 
  private:
   friend class Compaction;
@@ -183,7 +201,7 @@ class Version {
 
   // List of files per level
   //DTODO:Epoch相关数据
-
+  std::vector<Epoch*> epoches_;
   std::vector<FileMetaData*> files_[config::kNumLevels];
 
   // Next file to compact based on seek stats.

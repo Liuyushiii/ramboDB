@@ -9,6 +9,7 @@
 #include "leveldb/table.h"
 #include "util/coding.h"
 
+#include <iostream>
 namespace leveldb {
 
 struct TableAndFile {

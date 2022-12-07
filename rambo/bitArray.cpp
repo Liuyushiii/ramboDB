@@ -37,6 +37,12 @@ void bitArray::ANDop(char* B){
   }
 }
 
+void bitArray::ORop(char* B){
+  for (int i=0; i<(ar_size/8 +1); i++ ){
+    A[i] |= B[i];
+  }
+}
+
 int bitArray::getcount(void){
   int count = 0;
 
@@ -57,7 +63,7 @@ void bitArray::serializeBitAr(string BF_file){
     cout<<"Cannot open output file\n";
   }
   out.write(A,ar_size/8 +1);
-    out.close();
+  out.close();
 }
 
 void bitArray::deserializeBitAr(std::vector<string> BF_file){

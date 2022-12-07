@@ -11,13 +11,13 @@
 #include <iostream>
 
 #include "db/dbformat.h"
-
+#include "rambo/Rambo_construction.h"
 namespace leveldb {
 
 class VersionSet;
 
 struct FileMetaData {
-  FileMetaData() : refs(0), allowed_seeks(1 << 30), file_size(0) {}
+  FileMetaData() : refs(0), allowed_seeks(1 << 30), file_size(0), filter_(nullptr) {}
 
   int refs;
   int allowed_seeks;  // Seeks allowed until compaction
@@ -27,7 +27,7 @@ struct FileMetaData {
   InternalKey largest;   // Largest internal key served by table
   int highest_bid;  //hightest block height served by table
   int lowest_bid;   //lowest block height served by table
-  int epoch_id;
+  RAMBO* filter_;
 };
 
 class VersionEdit {
@@ -66,7 +66,7 @@ class VersionEdit {
   // REQUIRES: "smallest" and "largest" are smallest and largest keys in file
   void AddFile(int level, uint64_t file, uint64_t file_size,
                const InternalKey& smallest, const InternalKey& largest,
-               int highest_bid=INT32_MIN,int lowest_bid=INT32_MAX) {
+               int highest_bid=INT32_MIN,int lowest_bid=INT32_MAX,RAMBO* filter_=nullptr) {
     FileMetaData f;
     f.number = file;
     f.file_size = file_size;
@@ -74,6 +74,7 @@ class VersionEdit {
     f.largest = largest;
     f.highest_bid=highest_bid;
     f.lowest_bid=lowest_bid;
+    f.filter_=filter_;
     std::cout<<"ADDFILE:"<<lowest_bid<<"-"<<highest_bid<<std::endl;
     new_files_.push_back(std::make_pair(level, f));
   }
