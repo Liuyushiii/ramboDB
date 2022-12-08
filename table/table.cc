@@ -243,6 +243,49 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
   return s;
 }
 
+Status Table::InternalGetWithVersion(const ReadOptions& options, const Slice& k, void* arg,
+                          bool (*handle_result)(void*, const Slice&,
+                                                const Slice&)) {
+  Status s;
+  Iterator* iiter = rep_->index_block->NewIterator(rep_->options.comparator);
+  iiter->Seek(k);
+  bool flag=false;
+  while (iiter->Valid()) {
+    Slice handle_value = iiter->value();
+    FilterBlockReader* filter = rep_->filter;
+    BlockHandle handle;
+    //DTODO:过滤器查询相关
+    if (filter != nullptr && handle.DecodeFrom(&handle_value).ok() &&
+        !filter->KeyMayMatch(handle.offset(), k)) {
+      // Not found
+    } else {
+      Iterator* block_iter = BlockReader(this, options, iiter->value());
+      block_iter->Seek(k);
+      while(block_iter->Valid())
+      {
+        bool f=(*handle_result)(arg, block_iter->key(), block_iter->value());
+        if(!f)
+          block_iter->Next();
+        else{
+          flag=true;
+          break;
+        }
+      }
+      s = block_iter->status();
+      delete block_iter;
+    }
+    if(flag==true)
+      break;
+    else
+      iiter->Next();
+  }
+  if (s.ok()) {
+    s = iiter->status();
+  }
+  delete iiter;
+  return s;
+}
+
 uint64_t Table::ApproximateOffsetOf(const Slice& key) const {
   Iterator* index_iter =
       rep_->index_block->NewIterator(rep_->options.comparator);

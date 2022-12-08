@@ -18,6 +18,7 @@
 #include "table/two_level_iterator.h"
 #include "util/coding.h"
 #include "util/logging.h"
+#include "codec/Common.h"
 
 namespace leveldb {
 
@@ -251,11 +252,14 @@ enum SaverState {
   kFound,
   kDeleted,
   kCorrupt,
+  kContinued,
+  kEnd
 };
 struct Saver {
   SaverState state;
   const Comparator* ucmp;
   Slice user_key;
+  std::string finalkey;
   std::string* value;
 };
 }  // namespace
@@ -273,6 +277,41 @@ static void SaveValue(void* arg, const Slice& ikey, const Slice& v) {
       }
     }
   }
+}
+
+static bool SaveValueWithVersion(void* arg, const Slice& ikey, const Slice& v) {
+  Saver* s = reinterpret_cast<Saver*>(arg);
+  ParsedInternalKey parsed_key;
+  if (!ParseInternalKey(ikey, &parsed_key)) {
+    s->state = kCorrupt;
+  } else {
+    if (s->ucmp->Compare(parsed_key.user_key, s->finalkey) <= 0) {
+      int64_t num=0;
+      if(s->value->size()!=0)
+      {
+        memcpy(reinterpret_cast<void*>(&num), &(*s->value)[0], sizeof(int64_t));
+      }
+      std::string x;
+      x.assign(v.data(),v.size());
+      int64_t n;
+      memcpy(reinterpret_cast<void*>(&n), &x[0], sizeof(int64_t));
+      s->state = (parsed_key.type == kTypeValue) ? kContinued : kDeleted;
+      if (s->state == kContinued) {
+        int64_t vv;
+        memcpy(reinterpret_cast<char*>(&vv),&x[8],sizeof(int64_t));
+        int64_t to=ramboreverse_int64(vv);
+        std::cout<<"getkey_version: "<<to<<" "<<vv<<std::endl;;
+        num+=n;
+        memcpy(&(*s->value)[0],reinterpret_cast<void*>(&num) ,sizeof(int64_t));
+        s->value->append(x.substr(8,x.size()-8));
+      }
+      return false;
+    }else{
+      s->state=kEnd;
+      return true;
+    }
+  }
+  return false;
 }
 
 static bool NewestFirst(FileMetaData* a, FileMetaData* b) {
@@ -294,7 +333,7 @@ void Version::ForEachOverlapping(Slice user_key, Slice internal_key, void* arg,
 
     if((lowest_bid<=min_height && min_height<=highest_bid) 
         ||(lowest_bid<=max_heigth && max_heigth<=highest_bid)){
-          auto epoch_file=epoches_[i]->FilterKey(user_key.ToString());
+          auto epoch_file=epoches_[i]->FilterKey(user_key.ToString().substr(0,8));
           std::cout<<"Epoch Overlapping:"<<i<<":"<<lowest_bid<<"-"<<highest_bid<<std::endl;
           std::cout<<"    Filter size:"<<epoch_file.size()<<std::endl;
           for(FileMetaData* file_meta:epoch_file){
@@ -344,7 +383,7 @@ void Version::ForEachOverlapping(Slice user_key, Slice internal_key, void* arg,
 }
 
 Status Version::Get(const ReadOptions& options, const LookupKey& k,
-                    std::string* value, GetStats* stats) {
+                    std::string* value, GetStats* stats, const std::string& finalkey) {
   stats->seek_file = nullptr;
   stats->seek_file_level = -1;
 
@@ -373,9 +412,9 @@ Status Version::Get(const ReadOptions& options, const LookupKey& k,
       state->last_file_read = f;
       state->last_file_read_level = level;
 
-      state->s = state->vset->table_cache_->Get(*state->options, f->number,
+      state->s = state->vset->table_cache_->GetWithVersion(*state->options, f->number,
                                                 f->file_size, state->ikey,
-                                                &state->saver, SaveValue);
+                                                &state->saver, SaveValueWithVersion);
       if (!state->s.ok()) {
         state->found = true;
         return false;
@@ -415,6 +454,7 @@ Status Version::Get(const ReadOptions& options, const LookupKey& k,
   state.saver.state = kNotFound;
   state.saver.ucmp = vset_->icmp_.user_comparator();
   state.saver.user_key = k.user_key();
+  state.saver.finalkey = finalkey;
   state.saver.value = value;
 
   ForEachOverlapping(state.saver.user_key, state.ikey, &state, &State::Match, 

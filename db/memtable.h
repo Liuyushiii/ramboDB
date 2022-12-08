@@ -62,6 +62,8 @@ class MemTable {
   // Else, return false.
   bool Get(const LookupKey& key, std::string* value, Status* s);
 
+  bool GetWithVersion(const LookupKey& key, std::string* value, Status* s, const std::string& finalkey);
+  
   int highest_bid;
   int lowest_bid;
  private:

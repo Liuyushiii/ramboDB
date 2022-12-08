@@ -39,7 +39,7 @@ Status BuildTable(const std::string& dbname, Env* env, const Options& options,
       builder->Add(key, iter->value());
       //DTODO:RAMBO插入逻辑
       meta->filter_->insertion_pair(
-        std::make_pair<std::string,std::string>(ExtractUserKey(key).ToString(),std::to_string(meta->number)));
+        std::make_pair<std::string,std::string>(ExtractUserKey(key).ToString().substr(0,8),std::to_string(meta->number)));
     }
     if (!key.empty()) {
       meta->largest.DecodeFrom(key);

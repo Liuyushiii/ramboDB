@@ -34,6 +34,7 @@
 #include "util/coding.h"
 #include "util/logging.h"
 #include "util/mutexlock.h"
+#include "codec/Common.h"
 
 namespace leveldb {
 
@@ -1119,6 +1120,8 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
   Status s;
   MutexLock l(&mutex_);
   SequenceNumber snapshot;
+  int64_t lversion=options.min_height,rversion=options.max_height;
+  std::cout<<"GET:"<<lversion<<"-"<<rversion<<std::endl;
   if (options.snapshot != nullptr) {
     snapshot =
         static_cast<const SnapshotImpl*>(options.snapshot)->sequence_number();
@@ -1140,18 +1143,50 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
   {
     mutex_.Unlock();
     // First look in the memtable, then in the immutable memtable (if any).
-    LookupKey lkey(key, snapshot);
-    if (mem->Get(lkey, value, &s)) {
-      std::cout<<"MEM-GET"<<std::endl;
+    std::string k;
+    k.assign(key.data(),key.size());
+    std::string kl,kr;
+    kl=k;
+    kr=k;
+    int64_t lv=ramboreverse_int64(lversion);
+    int64_t rv=ramboreverse_int64(rversion);
+    // std::cout<<lv<<"-"<<ramboreverse_int64(rv)<<std::endl;
+    kl.append(reinterpret_cast<char*>(&lv), sizeof(int64_t));
+    kr.append(reinterpret_cast<char*>(&rv), sizeof(int64_t));
+    int64_t vv;
+    memcpy(reinterpret_cast<char*>(&vv),&kl[8],sizeof(int64_t));
+    std::cout<<"kl_version: "<<ramboreverse_int64(vv)<<std::endl;
+
+    int64_t kk;
+    memcpy(reinterpret_cast<char*>(&kk),&kr[8],sizeof(int64_t));
+    std::cout<<"kr_version: "<<ramboreverse_int64(kk)<<std::endl;
+    std::cout<<kl.size()<<" "<<kr.size()<<std::endl;
+    LookupKey lkey(leveldb::Slice(kl), snapshot);
+    mem->GetWithVersion(lkey,value,&s,kr);
+    std::cout<<"get from memtable"<<std::endl;
+    std::cout<<mem_->lowest_bid<<" "<<mem_->highest_bid<<std::endl;
+    if(imm_ != nullptr)
+    {
+      imm->GetWithVersion(lkey,value,&s,kr);
+      std::cout<<"get from immemtable"<<std::endl;
+      std::cout<<imm_->lowest_bid<<" "<<imm_->highest_bid<<std::endl;
+    }
+    /*if(1==0)
+    {*/
+      s=current->Get(options, lkey, value, &stats,kr);
+      std::cout<<"get from sstable"<<std::endl;
+      have_stat_update = true;
+    //}
+    
+    
+   /* if (mem->Get(lkey, value, &s)) {
       // Done
     } else if (imm != nullptr && imm->Get(lkey, value, &s)) {
-      std::cout<<"IMM-GET"<<std::endl;
       // Done
     } else {
       s = current->Get(options, lkey, value, &stats);
       have_stat_update = true;
-      std::cout<<"SST-GET"<<std::endl;
-    }
+    }*/
     mutex_.Lock();
   }
 

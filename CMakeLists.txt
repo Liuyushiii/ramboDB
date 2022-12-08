@@ -205,6 +205,14 @@ target_sources(leveldb
     "rambo/utils.h"
     "rambo/constants.h"
 
+    "codec/Common.h"
+    "codec/ResultSchemaProvider.h"
+    "codec/RowWriter.h"
+    "codec/Value.h"
+    "codec/ResultSchemaProvider.cpp"
+    "codec/RowWriter.cpp"
+    "codec/Value.cpp"
+
   # Only CMake 3.3+ supports PUBLIC sources in targets exported by "install".
   $<$<VERSION_GREATER:CMAKE_VERSION,3.2>:PUBLIC>
     "${LEVELDB_PUBLIC_INCLUDE_DIR}/c.h"

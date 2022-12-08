@@ -7,6 +7,7 @@
 #include "db/version_edit.h"
 #include "leveldb/write_batch.h"
 #include "db/memtable.h"
+#include "codec/Common.h"
 
 #include <openssl/sha.h>
 #include <rambo/Rambo_construction.h>
@@ -25,11 +26,14 @@ std::string sha256(const std::string &srcStr) {
 }
 
 
-void getNextState(leveldb::Random &rand, std::string &key, std::string &value) {
+void getNextState(leveldb::Random &rand, std::string &key, std::string &value,int64_t version) {
   std::string srcStr = std::to_string(rand.Next() % ACCOUNT_RANGE);
   // key = sha256(srcStr).substr(0, 20);
-  key=srcStr.substr(0,20);
-  value = "value";
+  key=srcStr.substr(0,8);
+  key=std::string(8-key.length(),'0')+key;
+  int64_t vv=leveldb::ramboreverse_int64(version);
+  key.append(reinterpret_cast<char*>(&vv),sizeof(int64_t));
+  value = key;
 }
 
 std::map<std::string,std::vector<int>> key_cache;
@@ -39,10 +43,10 @@ void generateWriteBatch(int batch_size_, int batch_num_, leveldb::WriteBatch &wr
   std::string value;
   std::string pos;
   for (int i = 0; i < batch_size_; i++) {
-      getNextState(rand, key, value);
-      key_cache[key].push_back(batch_num_);
+      getNextState(rand, key, value, batch_num_);
+      key_cache[key.substr(0,key.size()-8)].push_back(batch_num_);
       pos = std::to_string(batch_num_);
-      write_batch_.Put(key, pos,batch_num_);
+      write_batch_.Put(key, value, batch_num_);
   }
   return;
 }
@@ -76,7 +80,7 @@ void dbTest(){
 
   std::cout<<"3"<<std::endl;
   std::string db_state;
-  for(int i=0;i<1000;++i){
+  for(int i=0;i<100;++i){
     generateWriteBatch(2000,i,batch1);
     db->Write(leveldb::WriteOptions(),&batch1);
     db->GetProperty("leveldb.stats", &db_state);
@@ -86,8 +90,8 @@ void dbTest(){
   std::cout<<"4:"<<s.ToString()<<std::endl;
 
   leveldb::ReadOptions read_option;
-  read_option.min_height=400;
-  read_option.max_height=600;
+  read_option.min_height=0;
+  read_option.max_height=100;
   for(auto& kv:key_cache){
     std::string value;
     db->Get(read_option,kv.first,&value);
