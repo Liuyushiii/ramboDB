@@ -99,6 +99,7 @@ void MurmurHash3_x86_32 ( const void * key, int len,
 
   uint32_t h1 = seed;
 
+
   const uint32_t c1 = 0xcc9e2d51;
   const uint32_t c2 = 0x1b873593;
 
@@ -107,7 +108,7 @@ void MurmurHash3_x86_32 ( const void * key, int len,
 
   const uint32_t * blocks = (const uint32_t *)(data + nblocks*4);
 
-  for(int i = -nblocks; i; i++)
+  for(int i = -nblocks; i; ++i)
   {
     uint32_t k1 = getblock32(blocks,i);
 

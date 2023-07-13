@@ -2090,6 +2090,7 @@ class ModelDB : public DB {
         (*map_)[key.ToString()] = value.ToString();
       }
       void Delete(const Slice& key) override { map_->erase(key.ToString()); }
+      void RecordRange(int low,int high){}
     };
     Handler handler;
     handler.map_ = &map_;

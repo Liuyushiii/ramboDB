@@ -148,7 +148,9 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
       background_compaction_scheduled_(false),
       manual_compaction_(nullptr),
       versions_(new VersionSet(dbname_, &options_, table_cache_,
-                               &internal_comparator_)) {}
+                               &internal_comparator_)) {
+                                arena_.initialize(3);
+                               }
 
 DBImpl::~DBImpl() {
   // Wait for background work to finish.
@@ -302,7 +304,6 @@ Status DBImpl::Recover(VersionEdit* edit, bool* save_manifest) {
   if (!s.ok()) {
     return s;
   }
-
   if (!env_->FileExists(CurrentFileName(dbname_))) {
     if (options_.create_if_missing) {
       Log(options_.info_log, "Creating DB %s since it was missing.",
@@ -321,13 +322,12 @@ Status DBImpl::Recover(VersionEdit* edit, bool* save_manifest) {
                                      "exists (error_if_exists is true)");
     }
   }
-
   s = versions_->Recover(save_manifest);
   if (!s.ok()) {
     return s;
   }
   SequenceNumber max_sequence(0);
-
+  //printf("---Recover Log---\n");
   // Recover from all newer log files than the ones named in the
   // descriptor (new log files may have been added by the previous
   // incarnation without registering them in the descriptor).
@@ -337,6 +337,7 @@ Status DBImpl::Recover(VersionEdit* edit, bool* save_manifest) {
   // produced by an older version of leveldb.
   const uint64_t min_log = versions_->LogNumber();
   const uint64_t prev_log = versions_->PrevLogNumber();
+  //std::cout<<"lognumber: "<<min_log<<" prelognumber: "<<prev_log<<std::endl;
   std::vector<std::string> filenames;
   s = env_->GetChildren(dbname_, &filenames);
   if (!s.ok()) {
@@ -347,6 +348,7 @@ Status DBImpl::Recover(VersionEdit* edit, bool* save_manifest) {
   uint64_t number;
   FileType type;
   std::vector<uint64_t> logs;
+  //printf("--filename.size(): %d\n",filenames.size());
   for (size_t i = 0; i < filenames.size(); i++) {
     if (ParseFileName(filenames[i], &number, &type)) {
       expected.erase(number);
@@ -379,7 +381,7 @@ Status DBImpl::Recover(VersionEdit* edit, bool* save_manifest) {
   if (versions_->LastSequence() < max_sequence) {
     versions_->SetLastSequence(max_sequence);
   }
-
+  //printf("---Recover Log End---\n");
   return Status::OK();
 }
 
@@ -425,6 +427,7 @@ Status DBImpl::RecoverLogFile(uint64_t log_number, bool last_log,
       (unsigned long long)log_number);
 
   // Read all the records and add to a memtable
+  //printf("---read log files---\n");
   std::string scratch;
   Slice record;
   WriteBatch batch;
@@ -436,6 +439,7 @@ Status DBImpl::RecoverLogFile(uint64_t log_number, bool last_log,
                           Status::Corruption("log record too small"));
       continue;
     }
+
     WriteBatchInternal::SetContents(&batch, record);
 
     if (mem == nullptr) {
@@ -538,8 +542,15 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
     // if (base != nullptr) {
     //   level = base->PickLevelForMemTableOutput(min_user_key, max_user_key);
     // }
-    edit->AddFile(level, meta.number, meta.file_size, meta.smallest,
-                  meta.largest,meta.highest_bid,meta.lowest_bid,meta.filter_);
+    if(meta.lowest_bid==INT32_MAX&&meta.highest_bid==INT32_MIN)
+    {
+      printf("--lueluelue--\n");
+    }
+    else{
+      edit->AddFile(level, meta.number, meta.file_size, meta.smallest,
+              meta.largest,meta.lowest_bid,meta.highest_bid,nullptr,meta.filter_,nullptr);
+    }
+    
   }
 
   CompactionStats stats;
@@ -1121,7 +1132,7 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
   MutexLock l(&mutex_);
   SequenceNumber snapshot;
   int64_t lversion=options.min_height,rversion=options.max_height;
-  std::cout<<"GET:"<<lversion<<"-"<<rversion<<std::endl;
+  //std::cout<<"GET:"<<lversion<<"-"<<rversion<<std::endl;
   if (options.snapshot != nullptr) {
     snapshot =
         static_cast<const SnapshotImpl*>(options.snapshot)->sequence_number();
@@ -1155,44 +1166,36 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
     kr.append(reinterpret_cast<char*>(&rv), sizeof(int64_t));
     int64_t vv;
     memcpy(reinterpret_cast<char*>(&vv),&kl[8],sizeof(int64_t));
-    std::cout<<"kl_version: "<<ramboreverse_int64(vv)<<std::endl;
+    //std::cout<<"key: "<<k<<std::endl;
+    //std::cout<<"kl_version: "<<vv<<"  "<<ramboreverse_int64(vv)<<std::endl;
 
     int64_t kk;
     memcpy(reinterpret_cast<char*>(&kk),&kr[8],sizeof(int64_t));
-    std::cout<<"kr_version: "<<ramboreverse_int64(kk)<<std::endl;
-    std::cout<<kl.size()<<" "<<kr.size()<<std::endl;
+    //std::cout<<"kr_version: "<<kk<<" "<<ramboreverse_int64(kk)<<std::endl;
+
     LookupKey lkey(leveldb::Slice(kl), snapshot);
     mem->GetWithVersion(lkey,value,&s,kr);
-    std::cout<<"get from memtable"<<std::endl;
-    std::cout<<mem_->lowest_bid<<" "<<mem_->highest_bid<<std::endl;
+    //std::cout<<"get from memtable"<<std::endl;
+    //std::cout<<mem_->lowest_bid<<" "<<mem_->highest_bid<<std::endl;
     if(imm_ != nullptr)
     {
       imm->GetWithVersion(lkey,value,&s,kr);
-      std::cout<<"get from immemtable"<<std::endl;
-      std::cout<<imm_->lowest_bid<<" "<<imm_->highest_bid<<std::endl;
+      //std::cout<<"get from immemtable"<<std::endl;
+      //std::cout<<imm_->lowest_bid<<" "<<imm_->highest_bid<<std::endl;
     }
     /*if(1==0)
     {*/
       s=current->Get(options, lkey, value, &stats,kr);
-      std::cout<<"get from sstable"<<std::endl;
+     // std::cout<<"get from sstable"<<std::endl;
       have_stat_update = true;
     //}
     
-    
-   /* if (mem->Get(lkey, value, &s)) {
-      // Done
-    } else if (imm != nullptr && imm->Get(lkey, value, &s)) {
-      // Done
-    } else {
-      s = current->Get(options, lkey, value, &stats);
-      have_stat_update = true;
-    }*/
     mutex_.Lock();
   }
 
-  if (have_stat_update && current->UpdateStats(stats)) {
-    MaybeScheduleCompaction();
-  }
+  // if (have_stat_update && current->UpdateStats(stats)) {
+  //   MaybeScheduleCompaction();
+  // }
   mem->Unref();
   if (imm != nullptr) imm->Unref();
   current->Unref();

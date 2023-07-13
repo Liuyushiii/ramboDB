@@ -1,15 +1,21 @@
 
 #include "Rambo_construction.h"
-
-
+#include "util/hash.h"
 using namespace std;
 
 vector<uint> RAMBO::hashfunc(std::string key, int len) {
     // int hashvals[k];
     vector<uint> hashvals;
     uint op;
+    // op=std::atoi(key.c_str());
+    // for(int i=0;i<R;i++)
+    // {
+    //     hashvals.push_back(op/2 %B);
+    // }
+    // return hashvals;
     for (int i = 0; i < R; i++) {
         MurmurHash3_x86_32(key.c_str(), len, i, &op); //seed i
+        //op=leveldb::Hash(key.c_str(),key.size(),i);
         hashvals.push_back(op % B);
     }
     return hashvals;
@@ -44,19 +50,23 @@ RAMBO::RAMBO(int n, int r1, int b1, int K,int bias_) {
     K1 = K;
     bias = bias_;
 
-    p = 0.01/b1; //false positive rate
+    p = 0.01; //false positive rate
     range = ceil(-(n * log(p)) / (log(2) * log(2))); //range
+    //std::cout<<"BF_size: "<<range<<std::endl;
     // range = n;
     // k = 3;
-    // std::cout << "range" <<range<< '\n';
 
-    k = ceil(-log(p) / log(2)); //number of hash, k is 7 for 0.01
+
+    k = ceil(range/n * log(2)); //number of hash, k is 7 for 0.01
+    //std::cout<<"range: "<<range<<" k: "<<k<<std::endl;
     Rambo_array = new BloomFiler *[B * R]; //array of pointers
     //metaRambo = new vector<int>[B * R]; //constains set info in it.
-    metaRambo = new unordered_set<int>[B * R];
+    //metaRambo = new unordered_set<int>[B * R];
+    metaRambo = new int64_t[B * R];
     for (int b = 0; b < B; b++) {
         for (int r = 0; r < R; r++) {
             Rambo_array[b + B * r] = new BloomFiler(range, p, k);
+            metaRambo[b+B*r]=0;
         }
     }
 }
@@ -67,6 +77,35 @@ void RAMBO::serializeRAMBO(string dir) {
             string br = dir + to_string(b) + "_" + to_string(r) + ".txt";
             Rambo_array[b + B * r]->serializeBF(br);
         }
+    }
+}
+
+std::string RAMBO::toString(){
+    std::string buffer;
+    buffer.reserve((range/8+1)*B*R);
+    for(int b=0;b<B;++b){
+        for(int r=0;r<R;++r){
+            buffer.append(std::string(Rambo_array[b+B*r]->m_bits->A,range/8+1));
+        }
+    }
+    return std::move(buffer);
+}
+
+bool RAMBO::decodeFrom(const char* str,size_t str_size){
+    int size_per_bloom=(range/8+1);
+    int size=size_per_bloom*B*R;
+    if(str_size==size){
+        int count=0;
+        for(int b=0;b<B;++b){
+            for(int r=0;r<R;++r){
+                memcpy(Rambo_array[b+B*r]->m_bits->A,str+count*size_per_bloom,size_per_bloom);
+                count++;
+            }
+        }
+
+        return true;
+    }else{
+        return false;
     }
 }
 
@@ -82,12 +121,13 @@ void RAMBO::deserializeRAMBO(vector<string> dir) {
     }
 }
 
-void RAMBO::createMetaRambo_single(int value){
+void RAMBO::createMetaRambo_single(int value, int64_t bit){
         vector<uint> hashvals = RAMBO::hashfunc(std::to_string(value),
                                                 std::to_string(value).size()); // R hashvals, each with max value B
         for (int r = 0; r < R; r++) {
             //metaRambo[hashvals[r] + B * r].push_back(value);
-            metaRambo[hashvals[r] + B * r].insert(value);
+            //metaRambo[hashvals[r] + B * r].insert(value);
+            metaRambo[hashvals[r] + B * r]|=((int64_t)1 << bit);
         }
 }
 
@@ -109,6 +149,9 @@ void RAMBO::insertion_pair(std::pair<std::string, std::string> pair1){
         for (int r = 0; r < R; r++) {
             vector<uint> temp = myhash(pair1.first, pair1.first.size(), k, r, range);// i is the key
             Rambo_array[hashvals[r] + B * r]->insert(temp);
+            // uint op;
+            // MurmurHash3_x86_32(pair1.first.c_str(),pair1.first.size(),1,&op);
+            // metaRambo[(op % 5)+B*r*5]
         }
 }
 
@@ -138,9 +181,9 @@ boost::dynamic_bitset<> RAMBO::query_bias(std::string query_key, int len, int bi
                 //       bitarray_K1.set(metaRambo[b + B * r][j] - bias);
                 // }
                 
-                for(auto x:metaRambo[b + B * r]){
-                    bitarray_K1.set(x - bias);
-                }
+                // for(auto x:metaRambo[b + B * r]){
+                //     bitarray_K1.set(x - bias);
+                // }
 
                 //chrono::time_point<chrono::high_resolution_clock> t6 = chrono::high_resolution_clock::now();
                 //count+=((t6-t5).count()/1000000000.0);
@@ -166,7 +209,7 @@ boost::dynamic_bitset<> RAMBO::query_bias(std::string query_key, int len, int bi
         //cout<<"do and:"<<((t3-t2).count()/1000000000.0)<<endl;
         
     }
-    vector<uint>().swap(check);
+    //vector<uint>().swap(check);
     
     //chrono::time_point<chrono::high_resolution_clock> tend = chrono::high_resolution_clock::now();
     //cout<<"whole delta:"<<((tend-tstart).count()/1000000000.0)<<endl;
@@ -174,54 +217,124 @@ boost::dynamic_bitset<> RAMBO::query_bias(std::string query_key, int len, int bi
     return bitarray_K;
 }
 
-
-
 set<int> RAMBO::query_bias_set(std::string query_key, int len) {
-    chrono::time_point<chrono::high_resolution_clock> tstart = chrono::high_resolution_clock::now();
 
-    set<int> resUnion[R]; //constains union results in it.
     
-    chrono::time_point<chrono::high_resolution_clock> t1 = chrono::high_resolution_clock::now();
-    vector<uint> check;
-    for (int r = 0; r < R; r++) {
+    // arena_.execute([&]{
+    //     tbb::parallel_for(tbb::blocked_range<int>(0,R),[&](const tbb::blocked_range<int> &_r){
+    //         for(int r=_r.begin();r!=_r.end();r++)
+    //         {
+    //             vector<uint> check=myhash(query_key,len,k,rc,range);
+    //             bitArray_K1[r].resize(K1+1,false);
+    //             for(int b=0;b<B;b++)
+    //             {
+    //                 if(Rambo_array[b+B*r]->test(check)){
+    //                     for(auto x:metaRambo[b+B*r]){
+    //                         bitArray_K1[r].set(x-bias);
+    //                     }
+    //                 }
+    //             }
+    //         }
 
-        chrono::time_point<chrono::high_resolution_clock> t11 = chrono::high_resolution_clock::now();
-        check = myhash(query_key, len, k, r, range); //hash values correspondign to the keys
-        chrono::time_point<chrono::high_resolution_clock> t12 = chrono::high_resolution_clock::now();
-        for (int b = 0; b < B; b++) {
-            if (Rambo_array[b + B * r]->test(check)) {
-
-                for(auto x:metaRambo[b + B * r]){
-                    //bitarray_K1.set(x - bias);
-                    resUnion[r].emplace(x);
-                }
+    //     });
+    // });
+    //boost::dynamic_bitset<> bitArray_K1[R];
+    int64_t bit_ary[R];
+    for(int r=0;r<R;r++)
+    {
+        
+        vector<uint> check=myhash(query_key,len,k,r,range);
+        //bitArray_K1[r].resize(K1+1,false);
+        bit_ary[r]=0;
+        //std::cout<<"r: "<<r<<std::endl;
+        for(int b=0;b<B;b++)
+        {
+            //std::cout<<b<<" : ";
+            if(Rambo_array[b+B*r]->test(check)){
+                //std::cout<<b<<" : ";
+                
+                // for(auto x:metaRambo[b+B*r]){
+                //     //std::cout<<x<<" ";
+                //     bitArray_K1[r].set(x-bias);
+                // }
+                
+                bit_ary[r]=bit_ary[r]|metaRambo[b+B*r];
+                //std::cout<<std::endl;
             }
+           // std::cout<<std::endl;
         }
-        chrono::time_point<chrono::high_resolution_clock> t13 = chrono::high_resolution_clock::now();
-        //cout<<"check hash:"<<((t12-t11).count()/1000000000.0)<<endl;
-        //cout<<"emplace:"<<((t13-t12).count()/1000000000.0)<<endl;
     }
-    chrono::time_point<chrono::high_resolution_clock> t2 = chrono::high_resolution_clock::now();
-
-    for(int i=1;i<R;i++){
-        set<int> temp;
-        std::set_intersection(resUnion[i-1].begin(), resUnion[i-1].end(),
-                          resUnion[i].begin(), resUnion[i].end(),
-                          std::inserter(temp, temp.begin()));
-        resUnion[i] = temp;
+    for(int i=1;i<R;i++)
+    {
+        //bitArray_K1[0]=bitArray_K1[0]&bitArray_K1[i];
+        bit_ary[0]=bit_ary[0]&bit_ary[i];
     }
-
-
-
-    vector<uint>().swap(check);
+    //std::cout<<"YES2"<<std::endl;
+    set<int> temp;
+    int d=0;
+    int64_t s=bit_ary[0];
+    while(s)
+    {
+        if(s&1)
+        {
+            temp.emplace(d);
+        }
+        s/=2;
+        d++;
+    }
+    // for(size_t fid=bitArray_K1[0].find_first();fid!=boost::dynamic_bitset<>::npos;){
+    //     //std::cout<<fid+bias<<" ";
+    //     temp.emplace(bias+fid);
+    //     fid=bitArray_K1[0].find_next(fid);
+    // }
+    //std::cout<<"YES3"<<std::endl;
+    return temp;
+//     set<int> resUnion[R]; //constains union results in it.
     
-    chrono::time_point<chrono::high_resolution_clock> tend = chrono::high_resolution_clock::now();
 
-    //cout<<"delta1:"<<((t2-t1).count()/1000000000.0)<<endl;
-    //cout<<"delta2:"<<((tend-t2).count()/1000000000.0)<<endl;
-    //cout<<"whole delta:"<<((tend-tstart).count()/1000000000.0)<<endl;
+//     // vector<int> ve;
+//     // for(int i=0;i<R;i++)
+//     //     ve.emplace_back(i);
+
+//     // tbb::parallel_for_each(ve.begin(), ve.end(), [&](int r){
+//     //             //std::cout << r.i << std::endl; 
+//     //     vector<uint> check; 
+//     //     check=myhash(query_key, len, k, r, range);
+//     //     for (int b = 0; b < B; b++) {
+//     //         if (Rambo_array[b + B * r]->test(check)) {
+//     //             for(auto x:metaRambo[b + B * r]){
+//     //                 //bitarray_K1.set(x - bias);
+//     //                 resUnion[r].emplace(x);
+//     //             }
+//     //         }
+//     //     }
+//     // });
+
+//     vector<uint> check;
+//     for (int r = 0; r < R; r++) {
+//         // chrono::time_point<chrono::high_resolution_clock> t11 = chrono::high_resolution_clock::now();
+//         check = myhash(query_key, len, k, r, range); //hash values correspondign to the keys
+//         // chrono::time_point<chrono::high_resolution_clock> t12 = chrono::high_resolution_clock::now();
+//         for (int b = 0; b < B; b++) {
+//             if (Rambo_array[b + B * r]->test(check)) {
+//                 for(auto x:metaRambo[b + B * r]){
+//                     //bitarray_K1.set(x - bias);
+//                     resUnion[r].emplace(x);
+//                 }
+//             }
+//         }
+//     }
+//   //  std::cout<<"end!!"<<std::endl;
+//     for(int i=1;i<R;i++){
+//         set<int> temp;
+//         std::set_intersection(resUnion[i-1].begin(), resUnion[i-1].end(),
+//                           resUnion[i].begin(), resUnion[i].end(),
+//                           std::inserter(temp, temp.begin()));
+//         resUnion[i] = temp;
+//     }
     
-    return resUnion[R-1];
+//     vector<uint>().swap(check);
+//     return resUnion[R-1];
 }
 
 
@@ -229,6 +342,32 @@ void RAMBO::merge_another_rambo(RAMBO &b){
     K1 += b.K1;
     for(int i=0;i<B * R;i++){
         Rambo_array[i]->merge_another_bf(b.Rambo_array[i]);
-        metaRambo[i].insert(b.metaRambo[i].begin(),b.metaRambo[i].end());
+        //metaRambo[i].insert(b.metaRambo[i].begin(),b.metaRambo[i].end());
+        metaRambo[i]=metaRambo[i]|b.metaRambo[i];
     } 
 };
+
+void RAMBO::out_set(){
+    for(int r=0;r<R;r++)
+    {
+        std::cout<<"R: "<<r<<std::endl;;
+        for(int b=0;b<B;b++)
+        {
+            // for(auto x:metaRambo[b+B*r]){
+            //     std::cout<<x<<" ";
+            // }
+            int s=metaRambo[b+B*r];
+            int d=0;
+            while(s)
+            {
+                if(s&1)
+                {
+                    std::cout<<bias+d<<" ";
+                }
+                s/=2;
+                d++;
+            }
+            std::cout<<std::endl;
+        }
+    }
+}

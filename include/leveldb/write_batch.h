@@ -37,6 +37,7 @@ class LEVELDB_EXPORT WriteBatch {
     virtual ~Handler();
     virtual void Put(const Slice& key, const Slice& value) = 0;
     virtual void Delete(const Slice& key) = 0;
+    virtual void RecordRange(int low,int high) = 0;
   };
 
   WriteBatch();
@@ -69,14 +70,17 @@ class LEVELDB_EXPORT WriteBatch {
   // the operations into this batch.
   void Append(const WriteBatch& source);
 
+  //finally record the batch's range
+  void RecordRange();
+
   // Support for iterating over the contents of a batch.
   Status Iterate(Handler* handler) const;
 
 
  private:
   friend class WriteBatchInternal;
-  int highest_bid_;  //hightest block height served by table
   int lowest_bid_;   //lowest block height served by table
+  int highest_bid_;  //hightest block height served by table
   std::string rep_;  // See comment in write_batch.cc for the format of rep_
 };
 

@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
 
         std::clock_t insert2 = std::clock();
 
-        rambo_vector[file_num/delta_range-all_start/delta_range].createMetaRambo_single(file_num);
+        //rambo_vector[file_num/delta_range-all_start/delta_range].createMetaRambo_single(file_num);
         rambo_vector[file_num/delta_range-all_start/delta_range].insertion_pair(make_pair(KeySets[0], to_string(file_num)));
 
         // myRambo.createMetaRambo_single(atoi(KeySets[1].c_str()));

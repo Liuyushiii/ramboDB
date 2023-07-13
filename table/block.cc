@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <vector>
+#include <iostream>
 
 #include "leveldb/comparator.h"
 #include "table/format.h"
@@ -124,7 +125,7 @@ class Block::Iter : public Iterator {
     assert(num_restarts_ > 0);
   }
 
-  bool Valid() const override { return current_ < restarts_; }
+  bool Valid() const override {return current_ < restarts_; }
   Status status() const override { return status_; }
   Slice key() const override {
     assert(Valid());

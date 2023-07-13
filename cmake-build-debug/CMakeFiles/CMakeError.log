@@ -1,0 +1,205 @@
+Determining if the function crc32c_value exists in the crc32c failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-4cdyus
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_8b9c2 && [1/2] Building C object CMakeFiles/cmTC_8b9c2.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_8b9c2
+FAILED: cmTC_8b9c2 
+: && /usr/bin/cc -DCHECK_FUNCTION_EXISTS=crc32c_value  CMakeFiles/cmTC_8b9c2.dir/CheckFunctionExists.c.o -o cmTC_8b9c2  -lcrc32c && :
+/usr/bin/ld: 找不到 -lcrc32c
+collect2: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function snappy_compress exists in the snappy failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-3jJn6G
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_ef716 && [1/2] Building C object CMakeFiles/cmTC_ef716.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_ef716
+FAILED: cmTC_ef716 
+: && /usr/bin/cc -DCHECK_FUNCTION_EXISTS=snappy_compress  CMakeFiles/cmTC_ef716.dir/CheckFunctionExists.c.o -o cmTC_ef716  -lsnappy && :
+/usr/bin/ld: 找不到 -lsnappy
+collect2: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function malloc exists in the tcmalloc failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ooC6MV
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_4b608 && [1/2] Building C object CMakeFiles/cmTC_4b608.dir/CheckFunctionExists.c.o
+<command-line>: warning: conflicting types for built-in function ‘malloc’; expected ‘void *(long unsigned int)’ [-Wbuiltin-declaration-mismatch]
+/home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ooC6MV/CheckFunctionExists.c:7:3: note: in expansion of macro ‘CHECK_FUNCTION_EXISTS’
+    7 |   CHECK_FUNCTION_EXISTS(void);
+      |   ^~~~~~~~~~~~~~~~~~~~~
+/home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ooC6MV/CheckFunctionExists.c:1:1: note: ‘malloc’ is declared in header ‘<stdlib.h>’
+  +++ |+#include <stdlib.h>
+    1 | #ifdef CHECK_FUNCTION_EXISTS
+[2/2] Linking C executable cmTC_4b608
+FAILED: cmTC_4b608 
+: && /usr/bin/cc -DCHECK_FUNCTION_EXISTS=malloc  CMakeFiles/cmTC_4b608.dir/CheckFunctionExists.c.o -o cmTC_4b608  -ltcmalloc && :
+/usr/bin/ld: 找不到 -ltcmalloc
+collect2: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the F_FULLFSYNC exist failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ociPup
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_9ba00 && [1/2] Building CXX object CMakeFiles/cmTC_9ba00.dir/CheckSymbolExists.cxx.o
+FAILED: CMakeFiles/cmTC_9ba00.dir/CheckSymbolExists.cxx.o 
+/usr/bin/c++   -fdiagnostics-color=always -std=c++11 -o CMakeFiles/cmTC_9ba00.dir/CheckSymbolExists.cxx.o -c /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ociPup/CheckSymbolExists.cxx
+/home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ociPup/CheckSymbolExists.cxx: In function ‘int main(int, char**)’:
+/home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ociPup/CheckSymbolExists.cxx:8:19: error: ‘F_FULLFSYNC’ was not declared in this scope
+    8 |   return ((int*)(&F_FULLFSYNC))[argc];
+      |                   ^~~~~~~~~~~
+ninja: build stopped: subcommand failed.
+
+
+File CheckSymbolExists.cxx:
+/* */
+#include <fcntl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef F_FULLFSYNC
+  return ((int*)(&F_FULLFSYNC))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Performing C++ SOURCE FILE Test HAVE_CLANG_THREAD_SAFETY failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-m9vAJT
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_733da && [1/2] Building CXX object CMakeFiles/cmTC_733da.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_733da.dir/src.cxx.o 
+/usr/bin/c++ -DHAVE_CLANG_THREAD_SAFETY  -fno-exceptions -fno-rtti  -fdiagnostics-color=always   -Wthread-safety -std=c++11 -o CMakeFiles/cmTC_733da.dir/src.cxx.o -c /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-m9vAJT/src.cxx
+c++: error: unrecognized command line option '-Wthread-safety'
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+int main() { return 0; }
+
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Hh6reE
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_0cc4d && [1/2] Building C object CMakeFiles/cmTC_0cc4d.dir/src.c.o
+[2/2] Linking C executable cmTC_0cc4d
+FAILED: cmTC_0cc4d 
+: && /usr/bin/cc -Wstrict-prototypes  CMakeFiles/cmTC_0cc4d.dir/src.c.o -o cmTC_0cc4d   && :
+CMakeFiles/cmTC_0cc4d.dir/src.c.o：在函数‘main’中：
+src.c:(.text+0x3e)：对‘pthread_create’未定义的引用
+src.c:(.text+0x4a)：对‘pthread_detach’未定义的引用
+src.c:(.text+0x56)：对‘pthread_cancel’未定义的引用
+src.c:(.text+0x67)：对‘pthread_join’未定义的引用
+src.c:(.text+0x7b)：对‘pthread_atfork’未定义的引用
+collect2: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-KVBBdU
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_e852b && [1/2] Building C object CMakeFiles/cmTC_e852b.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_e852b
+FAILED: cmTC_e852b 
+: && /usr/bin/cc -Wstrict-prototypes -DCHECK_FUNCTION_EXISTS=pthread_create  CMakeFiles/cmTC_e852b.dir/CheckFunctionExists.c.o -o cmTC_e852b  -lpthreads && :
+/usr/bin/ld: 找不到 -lpthreads
+collect2: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.
+
+
+
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WSHORTEN_64_TO_32 failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-GLiu1b
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_e4b58 && [1/2] Building CXX object CMakeFiles/cmTC_e4b58.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_e4b58.dir/src.cxx.o 
+/usr/bin/c++ -DHAVE_CXX_FLAG_WSHORTEN_64_TO_32  -fno-exceptions -fno-rtti  -std=c++11  -Wall  -Wextra  -Wshadow  -Wsuggest-override  -Wshorten-64-to-32 -fdiagnostics-color=always   -Wshorten-64-to-32 -std=c++11 -o CMakeFiles/cmTC_e4b58.dir/src.cxx.o -c /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-GLiu1b/src.cxx
+c++: error: unrecognized command line option '-Wshorten-64-to-32'
+c++: error: unrecognized command line option '-Wshorten-64-to-32'
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+int main() { return 0; }
+
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WD654 failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-oQhZa0
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_17279 && [1/2] Building CXX object CMakeFiles/cmTC_17279.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_17279.dir/src.cxx.o 
+/usr/bin/c++ -DHAVE_CXX_FLAG_WD654  -fno-exceptions -fno-rtti  -std=c++11  -Wall  -Wextra  -Wshadow  -Wsuggest-override  -fstrict-aliasing  -Wno-deprecated-declarations  -fno-exceptions  -Wstrict-aliasing  -wd654 -fdiagnostics-color=always   -wd654 -std=c++11 -o CMakeFiles/cmTC_17279.dir/src.cxx.o -c /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-oQhZa0/src.cxx
+c++: error: unrecognized command line option '-wd654'
+c++: error: unrecognized command line option '-wd654'
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+int main() { return 0; }
+
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WTHREAD_SAFETY failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-tZCqej
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_e2f13 && [1/2] Building CXX object CMakeFiles/cmTC_e2f13.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_e2f13.dir/src.cxx.o 
+/usr/bin/c++ -DHAVE_CXX_FLAG_WTHREAD_SAFETY  -fno-exceptions -fno-rtti  -std=c++11  -Wall  -Wextra  -Wshadow  -Wsuggest-override  -fstrict-aliasing  -Wno-deprecated-declarations  -fno-exceptions  -Wstrict-aliasing  -Wthread-safety -fdiagnostics-color=always   -Wthread-safety -std=c++11 -o CMakeFiles/cmTC_e2f13.dir/src.cxx.o -c /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-tZCqej/src.cxx
+c++: error: unrecognized command line option '-Wthread-safety'
+c++: error: unrecognized command line option '-Wthread-safety'
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+int main() { return 0; }
+
+Performing C++ SOURCE FILE Test HAVE_KYOTOCABINET failed with the following output:
+Change Dir: /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Fy452O
+
+Run Build Command(s):/home/z/.cache/JetBrains/RemoteDev/dist/6c3ff81b1df74_CLion-232.7295.14/bin/ninja/linux/x64/ninja cmTC_df06c && [1/2] Building CXX object CMakeFiles/cmTC_df06c.dir/src.cxx.o
+FAILED: CMakeFiles/cmTC_df06c.dir/src.cxx.o 
+/usr/bin/c++ -DHAVE_KYOTOCABINET  -fno-exceptions -fno-rtti  -fdiagnostics-color=always -std=c++11 -o CMakeFiles/cmTC_df06c.dir/src.cxx.o -c /home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Fy452O/src.cxx
+/home/lys/ramboDB/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Fy452O/src.cxx:2:10: fatal error: kcpolydb.h: 没有那个文件或目录
+    2 | #include <kcpolydb.h>
+      |          ^~~~~~~~~~~~
+compilation terminated.
+ninja: build stopped: subcommand failed.
+
+
+Source file was:
+
+#include <kcpolydb.h>
+
+int main() {
+  kyotocabinet::TreeDB* db = new kyotocabinet::TreeDB();
+  delete db;
+  return 0;
+}
+  
+

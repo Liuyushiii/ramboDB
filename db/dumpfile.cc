@@ -88,7 +88,9 @@ class WriteBatchItemPrinter : public WriteBatch::Handler {
     r += "'\n";
     dst_->Append(r);
   }
-
+  void RecordRange(int low,int high) override{
+    
+  }
   WritableFile* dst_;
 };
 

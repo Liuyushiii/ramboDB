@@ -355,6 +355,9 @@ void leveldb_writebatch_iterate(const leveldb_writebatch_t* b, void* state,
     void Delete(const Slice& key) override {
       (*deleted_)(state_, key.data(), key.size());
     }
+    void RecordRange(int low,int high) override{
+      
+    }
   };
   H handler;
   handler.state_ = state;

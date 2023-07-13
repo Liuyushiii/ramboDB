@@ -20,7 +20,8 @@ enum Tag {
   kDeletedFile = 6,
   kNewFile = 7,
   // 8 was used for large value refs
-  kPrevLogNumber = 9
+  kPrevLogNumber = 9,
+  KEpochNumber = 10
 };
 
 void VersionEdit::Clear() {
@@ -37,6 +38,8 @@ void VersionEdit::Clear() {
   compact_pointers_.clear();
   deleted_files_.clear();
   new_files_.clear();
+  epoch_number_=0;
+  has_epoch_number_=false;
 }
 
 void VersionEdit::EncodeTo(std::string* dst) const {
@@ -72,7 +75,6 @@ void VersionEdit::EncodeTo(std::string* dst) const {
     PutVarint32(dst, deleted_file_kvp.first);   // level
     PutVarint64(dst, deleted_file_kvp.second);  // file number
   }
-
   for (size_t i = 0; i < new_files_.size(); i++) {
     const FileMetaData& f = new_files_[i].second;
     PutVarint32(dst, kNewFile);
@@ -81,7 +83,21 @@ void VersionEdit::EncodeTo(std::string* dst) const {
     PutVarint64(dst, f.file_size);
     PutLengthPrefixedSlice(dst, f.smallest.Encode());
     PutLengthPrefixedSlice(dst, f.largest.Encode());
+    PutVarint32(dst, f.lowest_bid);
+    PutVarint32(dst, f.highest_bid);
+    //std::cout<<"fliter:: "<<f.filter_->toString()<<std::endl;
+    if(f.filter_!=nullptr){
+      PutLengthPrefixedSlice(dst, f.filter_->toString());
+    }else{
+      //std::cout<<"nullptr"<<std::endl;
+      PutLengthPrefixedSlice(dst,"");
+    }
   }
+  // if(has_epoch_number_)
+  // {
+  //   PutVarint32(dst, KEpochNumber);
+  //   PutVarint64(dst, epoch_number_);
+  // }
 }
 
 static bool GetInternalKey(Slice* input, InternalKey* dst) {
@@ -99,6 +115,18 @@ static bool GetLevel(Slice* input, int* level) {
     *level = v;
     return true;
   } else {
+    return false;
+  }
+}
+
+static bool GetRAMBOFilter(Slice* input, std::shared_ptr<RAMBO> filter){
+  Slice str;
+  if(GetLengthPrefixedSlice(input,&str)){
+   // std::cout<<"file_size: "<<str.size()<<std::endl;
+    //std::cout<<str.data()<<std::endl;
+    filter->decodeFrom(str.data(),str.size());
+    return true;
+  }else{
     return false;
   }
 }
@@ -179,10 +207,28 @@ Status VersionEdit::DecodeFrom(const Slice& src) {
         if (GetLevel(&input, &level) && GetVarint64(&input, &f.number) &&
             GetVarint64(&input, &f.file_size) &&
             GetInternalKey(&input, &f.smallest) &&
-            GetInternalKey(&input, &f.largest)) {
+            GetInternalKey(&input, &f.largest) &&
+            GetVarint32(&input, (uint32_t*)&f.lowest_bid) &&
+            GetVarint32(&input, (uint32_t*)&f.highest_bid)){
+          std::shared_ptr<RAMBO> filter(new RAMBO(210000,3,7,100,0));
+          if(GetRAMBOFilter(&input,filter)){
+            f.filter_=filter;
+          }else{
+            f.filter_=nullptr;
+          }
+          
+         // f.filter_=nullptr;
           new_files_.push_back(std::make_pair(level, f));
         } else {
           msg = "new-file entry";
+        }
+        break;
+
+      case KEpochNumber:
+        if (GetVarint64(&input, &epoch_number_)) {
+          has_epoch_number_ = true;
+        } else {
+          msg = "epoch number";
         }
         break;
 

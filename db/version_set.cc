@@ -19,7 +19,7 @@
 #include "util/coding.h"
 #include "util/logging.h"
 #include "codec/Common.h"
-
+typedef std::vector<int>::iterator IntVecIt;
 namespace leveldb {
 
 static size_t TargetFileSize(const Options* options) {
@@ -252,8 +252,6 @@ enum SaverState {
   kFound,
   kDeleted,
   kCorrupt,
-  kContinued,
-  kEnd
 };
 struct Saver {
   SaverState state;
@@ -284,30 +282,34 @@ static bool SaveValueWithVersion(void* arg, const Slice& ikey, const Slice& v) {
   ParsedInternalKey parsed_key;
   if (!ParseInternalKey(ikey, &parsed_key)) {
     s->state = kCorrupt;
+    return true;
   } else {
-    if (s->ucmp->Compare(parsed_key.user_key, s->finalkey) <= 0) {
+    Slice finalkey(s->finalkey);
+    if (s->ucmp->Compare(parsed_key.user_key, finalkey) <= 0 && s->ucmp->Compare(parsed_key.user_key, s->user_key) >= 0) {
       int64_t num=0;
-      if(s->value->size()!=0)
+      if(s->value->size()!=8)
       {
         memcpy(reinterpret_cast<void*>(&num), &(*s->value)[0], sizeof(int64_t));
       }
+      //std::cout<<"value_size: "<<s->value->size()<<" get_valuenum: "<<num<<std::endl;
       std::string x;
       x.assign(v.data(),v.size());
       int64_t n;
       memcpy(reinterpret_cast<void*>(&n), &x[0], sizeof(int64_t));
-      s->state = (parsed_key.type == kTypeValue) ? kContinued : kDeleted;
-      if (s->state == kContinued) {
-        int64_t vv;
-        memcpy(reinterpret_cast<char*>(&vv),&x[8],sizeof(int64_t));
-        int64_t to=ramboreverse_int64(vv);
-        std::cout<<"getkey_version: "<<to<<" "<<vv<<std::endl;;
+      s->state = (parsed_key.type == kTypeValue) ? kFound : kDeleted;
+      if (s->state == kFound) {
         num+=n;
         memcpy(&(*s->value)[0],reinterpret_cast<void*>(&num) ,sizeof(int64_t));
-        s->value->append(x.substr(8,x.size()-8));
+        // int64_t vx;
+        // memcpy(reinterpret_cast<void*>(&vx) ,&(*s->value)[0],sizeof(int64_t));
+        // int64_t version;
+        // memcpy(reinterpret_cast<void*>(&version) ,&(parsed_key.user_key.ToString())[8],sizeof(int64_t));
+        // version=ramboreverse_int64(version);
+        //std::cout<<"version: "<<version<<" get_sum: "<<vx<<std::endl;
+        (*s->value).append(x.substr(8,x.size()-8));
       }
       return false;
     }else{
-      s->state=kEnd;
       return true;
     }
   }
@@ -318,68 +320,66 @@ static bool NewestFirst(FileMetaData* a, FileMetaData* b) {
   return a->number > b->number;
 }
 
-void Version::ForEachOverlapping(Slice user_key, Slice internal_key, void* arg,
+void Version::ForEachOverlapping(Slice user_key, Slice internal_key ,void* arg,
                                  bool (*func)(void*, int, FileMetaData*),int min_height=INT32_MIN,int max_heigth=INT32_MAX) {
   const Comparator* ucmp = vset_->icmp_.user_comparator();
-  std::cout<<"BEGIN ForEachOverlapping:"<<user_key.ToString()<<":"<<min_height<<"-"<<max_heigth<<std::endl;
+  //std::cout<<"BEGIN ForEachOverlapping:"<<user_key.ToString()<<":"<<min_height<<"-"<<max_heigth<<std::endl;
   // Search level-0 in order from newest to oldest.
-  std::vector<FileMetaData*> tmp;
-  // std::vector<Epoch*> tmp;
-  tmp.reserve(epoches_.size());
+  // std::vector<FileMetaData*> tmp;
+  // tmp.reserve(epoches_.size());
+  
   //DTODO:根据区块范围判断
+  // std::cout<<epoches_.size()<<std::endl;
+  int cnt=0,cnt2=0;
+  // clock_t begin, end;
+  // double ans;
+  // begin = clock();
+  //std::vector<int> t;
+  //std::cout<<"epoch_size: "<<epoches_.size()<<std::endl;
+  //std::cout<<"search_range: "<<min_height<<"-"<<max_heigth<<std::endl;
+  int64_t pre=0;
   for(uint32_t i=0;i<epoches_.size();++i){
+    cnt=0,cnt2=0;
     int lowest_bid=epoches_[i]->lowest_bid;
     int highest_bid=epoches_[i]->highest_bid;
-
-    if((lowest_bid<=min_height && min_height<=highest_bid) 
-        ||(lowest_bid<=max_heigth && max_heigth<=highest_bid)){
-          auto epoch_file=epoches_[i]->FilterKey(user_key.ToString().substr(0,8));
-          std::cout<<"Epoch Overlapping:"<<i<<":"<<lowest_bid<<"-"<<highest_bid<<std::endl;
-          std::cout<<"    Filter size:"<<epoch_file.size()<<std::endl;
-          for(FileMetaData* file_meta:epoch_file){
-            tmp.push_back(file_meta);
-          }
+    if(lowest_bid>max_heigth)
+      break;
+    if(std::max(lowest_bid,min_height) <= std::min(highest_bid,max_heigth)){
+      //Rambo
+      //std::cout<<"epoch_range: "<<lowest_bid<<"-"<<highest_bid<<std::endl;
+      // clock_t begin, end;
+      // double ans1,ans2;
+      // begin = clock();
+      std::string key=user_key.ToString().substr(0,8);
+      std::vector<int> epoch_file;
+      epoch_file=epoches_[i]->FilterKey(key);
+      // end=clock();
+      // ans2=double(end - begin) / CLOCKS_PER_SEC *1000;
+      // begin=clock();
+      for(int fid:epoch_file){
+        //std::cout<<" "<<fid;
+        FileMetaData* file_meta=epoches_[i]->files_[fid];
+        if(file_meta->highest_bid<min_height)
+          continue;
+        else if(file_meta->lowest_bid>max_heigth)
+          break;
+        //测试命中的key是否存在与filemeta内
+        //Saver* s = reinterpret_cast<Saver*>(arg);
+        cnt2++;
+        if (!(*func)(arg, 0, file_meta)) {
+        //return;
         }
-  }
-
-  
-  // tmp.reserve(files_[0].size());
-  // for (uint32_t i = 0; i < files_[0].size(); i++) {
-  //   FileMetaData* f = files_[0][i];
-  //   
-  //   if (ucmp->Compare(user_key, f->smallest.user_key()) >= 0 &&
-  //       ucmp->Compare(user_key, f->largest.user_key()) <= 0) {
-  //     tmp.push_back(f);
-  //   }
-  // }
-  if (!tmp.empty()) {
-    // std::sort(tmp.begin(), tmp.end(), NewestFirst);
-    std::cout<<"ForEachOverlapping:"<<tmp.size()<<std::endl;
-    for (uint32_t i = 0; i < tmp.size(); i++) {
-      if (!(*func)(arg, 0, tmp[i])) {
-        return;
       }
+      // end=clock();
+      // ans1=double(end - begin) / CLOCKS_PER_SEC *1000;
+      // //std::cout<<std::endl;
+      // std::cout<<"filter: "<<cnt2<<std::endl;
+      // std::cout<<"1_time: "<<(int)(ans2*1000)<<std::endl;
+      // std::cout<<"2_time: "<<(int)(ans1*1000)<<std::endl;
+      
     }
   }
 
-  // Search other levels.
-  // for (int level = 1; level < config::kNumLevels; level++) {
-  //   size_t num_files = files_[level].size();
-  //   if (num_files == 0) continue;
-
-  //   // Binary search to find earliest index whose largest key >= internal_key.
-  //   uint32_t index = FindFile(vset_->icmp_, files_[level], internal_key);
-  //   if (index < num_files) {
-  //     FileMetaData* f = files_[level][index];
-  //     if (ucmp->Compare(user_key, f->smallest.user_key()) < 0) {
-  //       // All of "f" is past any data for user_key
-  //     } else {
-  //       if (!(*func)(arg, level, f)) {
-  //         return;
-  //       }
-  //     }
-  //   }
-  // }
 }
 
 Status Version::Get(const ReadOptions& options, const LookupKey& k,
@@ -415,13 +415,14 @@ Status Version::Get(const ReadOptions& options, const LookupKey& k,
       state->s = state->vset->table_cache_->GetWithVersion(*state->options, f->number,
                                                 f->file_size, state->ikey,
                                                 &state->saver, SaveValueWithVersion);
+      //std::cout<<"state: "<<state->saver.state<<std::endl;
       if (!state->s.ok()) {
         state->found = true;
         return false;
       }
       switch (state->saver.state) {
         case kNotFound:
-          return true;  // Keep searching in other files
+          return false;  // Keep searching in other files
         case kFound:
           state->found = true;
           // return false;
@@ -456,7 +457,10 @@ Status Version::Get(const ReadOptions& options, const LookupKey& k,
   state.saver.user_key = k.user_key();
   state.saver.finalkey = finalkey;
   state.saver.value = value;
-
+  // int64_t vl,vr;
+  // memcpy(reinterpret_cast<void*>(&vl),&(k.user_key().ToString())[8],sizeof(int64_t));
+  // memcpy(reinterpret_cast<void*>(&vr),&(finalkey)[8],sizeof(int64_t));
+  // std::cout<<"Getfun beginkey_version: "<<vl<<" "<<ramboreverse_int64(vl)<<" finalkey_version: "<<vr<<" "<<ramboreverse_int64(vr)<<std::endl;
   ForEachOverlapping(state.saver.user_key, state.ikey, &state, &State::Match, 
                       options.min_height, options.max_height);
 
@@ -717,9 +721,12 @@ class VersionSet::Builder {
     }
 
     // Add new files
+    //printf("---Apply()---:\n");
+    //printf("new_files_size: %d\n",edit->new_files_.size());
     for (size_t i = 0; i < edit->new_files_.size(); i++) {
       const int level = edit->new_files_[i].first;
       FileMetaData* f = new FileMetaData(edit->new_files_[i].second);
+      //std::cout<<f->lowest_bid<<"-"<<f->highest_bid<<":"<<f->highest_bid-f->lowest_bid<<std::endl;
       f->refs = 1;
 
       // We arrange to automatically compact this file after
@@ -750,25 +757,30 @@ class VersionSet::Builder {
 
     //DTODO:Epoch修改
     v->epoches_=base_->epoches_;
-    if(v->epoches_.empty() || v->epoches_.back()->Full()){
+    //printf("---SaveTo()---:\n");
+    if(v->epoches_.empty()/* || v->epoches_.back()->Full()*/){
       v->epoches_.push_back(new Epoch(v->epoches_.size()));
     }
     Epoch* cur_epoch=v->epoches_.back();
-
+    //printf("current_epoch_id: %d\n",cur_epoch->epoch_id_);
     const FileSet* added_files = levels_[0].added_files;
     const std::vector<FileMetaData*>& base_files = base_->files_[0];
     v->files_[0].reserve(base_files.size() + added_files->size());
+    //printf("base_files_size: %d added_files_size: %d\n",base_files.size(),added_files->size());
     for (const auto& base_file : base_files){
+      //std::cout<<base_file->lowest_bid<<"-"<<base_file->highest_bid<<":"<<base_file->highest_bid-base_file->lowest_bid<<std::endl;
       MaybeAddFile(v,0,base_file);
     }
-
     for (const auto& added_file : *added_files) {
       MaybeAddFile(v,0,added_file);
       if(!cur_epoch->Full()){
         cur_epoch->AppendFile(added_file);
       }else{
-        v->epoches_.push_back(new Epoch(v->epoches_.size()));
+        v->epoches_.back()->self_check();
+        std::cout<<"epochid: "<<cur_epoch->epoch_id_<<" "<<cur_epoch->lowest_bid<<"-"<<cur_epoch->highest_bid<<std::endl;
+        v->epoches_.push_back(new Epoch(v->epoches_.size(),added_file->number));
         cur_epoch=v->epoches_.back();
+        cur_epoch->AppendFile(added_file);
       }
     }
     
@@ -877,6 +889,7 @@ void VersionSet::AppendVersion(Version* v) {
 }
 
 Status VersionSet::LogAndApply(VersionEdit* edit, port::Mutex* mu) {
+  //printf("-----LogAndApply-----\n");
   if (edit->has_log_number_) {
     assert(edit->log_number_ >= log_number_);
     assert(edit->log_number_ < next_file_number_);
@@ -912,6 +925,7 @@ Status VersionSet::LogAndApply(VersionEdit* edit, port::Mutex* mu) {
     if (s.ok()) {
       descriptor_log_ = new log::Writer(descriptor_file_);
       s = WriteSnapshot(descriptor_log_);
+      //std::cout<<"writesnapshot_time: "<<ans<<std::endl;
     }
   }
 
@@ -961,6 +975,7 @@ Status VersionSet::LogAndApply(VersionEdit* edit, port::Mutex* mu) {
 }
 
 Status VersionSet::Recover(bool* save_manifest) {
+  //printf("-----Recover-----\n");
   struct LogReporter : public log::Reader::Reporter {
     Status* status;
     void Corruption(size_t bytes, const Status& s) override {
@@ -1089,7 +1104,7 @@ Status VersionSet::Recover(bool* save_manifest) {
     Log(options_->info_log, "Error recovering version set with %d records: %s",
         read_records, error.c_str());
   }
-
+  //printf("-----Recover_end-----\n");
   return s;
 }
 
@@ -1185,11 +1200,47 @@ Status VersionSet::WriteSnapshot(log::Writer* log) {
   }
 
   // Save files
-  for (int level = 0; level < config::kNumLevels; level++) {
-    const std::vector<FileMetaData*>& files = current_->files_[level];
-    for (size_t i = 0; i < files.size(); i++) {
-      const FileMetaData* f = files[i];
-      edit.AddFile(level, f->number, f->file_size, f->smallest, f->largest);
+  // for (int level = 0; level < config::kNumLevels; level++) {
+  //   const std::vector<FileMetaData*>& files = current_->files_[level];
+  //   for (size_t i = 0; i < files.size(); i++) {
+  //     const FileMetaData* f = files[i];
+  //     edit.AddFile(level, f->number, f->file_size, f->smallest, f->largest);
+  //   }
+  // }
+
+  //Save epochs and files
+  std::cout<<"---wrtitesnap---"<<std::endl;
+  for(auto& epoch:current_->epoches_){
+    bool is_first=true;
+    //std::string dir="/tmp/ramboDBtest/bloomfile/";
+    for(auto& filemeta:epoch->files_){
+      const FileMetaData* f=filemeta.second;
+      if(is_first){
+        //std::cout<<"FIRST"<<std::endl;
+        epoch->self_check();
+        // std::shared_ptr<std::vector<std::string>> ve_=std::make_shared<std::vector<std::string>>();
+        // for(auto mp:epoch->mp_)
+        // {
+        //   int64_t b=mp.second;
+        //   std::string x="";
+        //   x.append(8,'0');
+        //   memcpy(&x[0],reinterpret_cast<void*>(&b) ,sizeof(int64_t));
+        //   std::string sum="";
+        //   sum.append(mp.first);
+        //   sum.append(x);
+        //   ve_->emplace_back(sum);
+        // }
+        edit.AddFile(0, f->number, f->file_size, f->smallest, f->largest, 
+                        f->lowest_bid, f->highest_bid,nullptr,epoch->rambo_filter_,nullptr);
+        is_first=false;
+        // dir=dir+std::to_string(epoch->epoch_id_)+"/";
+        // std::cout<<dir<<std::endl;
+        // epoch->rambo_filter_->serializeRAMBO(dir);
+      }else{
+        //std::cout<<"NULL"<<std::endl;
+        edit.AddFile(0, f->number, f->file_size, f->smallest, f->largest,
+                f->lowest_bid, f->highest_bid,nullptr, nullptr,nullptr);
+      }
     }
   }
 
@@ -1201,9 +1252,9 @@ Status VersionSet::WriteSnapshot(log::Writer* log) {
 int VersionSet::NumLevelFiles(int level) const {
   assert(level >= 0);
   assert(level < config::kNumLevels);
-  std::cout<<"Epoch Size:"<<current_->epoches_.size()<<std::endl;
+  //std::cout<<"Epoch Size:"<<current_->epoches_.size()<<std::endl;
   if(!current_->epoches_.empty()){
-    std::cout<<"range:"<<current_->epoches_.back()->lowest_bid<<"-"<<current_->epoches_.back()->highest_bid<<std::endl;
+    //std::cout<<"range:"<<current_->epoches_.back()->lowest_bid<<"-"<<current_->epoches_.back()->highest_bid<<std::endl;
   }
   
   return current_->files_[level].size();

@@ -35,9 +35,9 @@ RowWriter::RowWriter(ResultSchemaProvider* schema, std::string&& encoded)
   headerLen_ = 0;
   numNullBytes_ = 0;
   vidLen_=8;
-  int64_t vv;
-  memcpy(reinterpret_cast<char*>(&vv),&buf_[0],sizeof(int64_t));
-  std::cout<<"edge: "<<vv<<std::endl;
+  // int64_t vv;
+  // memcpy(reinterpret_cast<char*>(&vv),&buf_[0],sizeof(int64_t));
+  // std::cout<<"edge: "<<vv<<std::endl;
   memcpy(reinterpret_cast<char*>(&edgeNumber_), &buf_[0], sizeof(int64_t));
 }
 
@@ -69,6 +69,7 @@ WriteResult RowWriter::appendWriter(std::string&& buf) noexcept {
   */
   //把buf上的edge's offset append到原有的后面
   buf_.append(buf.substr(8));
+  return WriteResult::SUCCEEDED;
 }
 
 WriteResult RowWriter::delWriter(int64_t posl, int64_t posr) noexcept{
@@ -87,6 +88,7 @@ WriteResult RowWriter::delWriter(int64_t posl, int64_t posr) noexcept{
   */
   buf.append(buf_.substr(8+(posl-1)*(schema_->size()+vidLen_+8),(schema_->size()+vidLen_+8)* edgeNumber));
   buf_=std::move(buf);
+  return WriteResult::SUCCEEDED;
 }
 
 WriteResult RowWriter::writeNumber(int64_t v) noexcept {
@@ -133,7 +135,7 @@ WriteResult RowWriter::setVersion(int64_t pos, const int64_t version) noexcept {
 }
 
 Value RowWriter::getPosVersion(int64_t pos) const noexcept {
-  size_t pos_offset= 8 /*+ edgeNumber_*4*/ + (pos-1)*(schema_->size()+vidLen_+8)+8;
+  size_t pos_offset= 8 /*+ edgeNumber_*4*/ + (pos-1)*(schema_->size()+vidLen_+8)+vidLen_;
   int64_t val;
   memcpy(reinterpret_cast<void*>(&val), &buf_[pos_offset], sizeof(int64_t));
   return val;
@@ -179,7 +181,7 @@ Value RowWriter::getPosValueByIndex(int64_t pos, const int64_t index) const noex
   auto field = schema_->field(index);
   size_t pos_offset= 8 /*+ edgeNumber_*4*/ + (pos-1)*(schema_->size()+vidLen_+8);
   
-  size_t offset = pos_offset + 8/*DstId*/ + 8/*Version*/+ field->offset();
+  size_t offset = pos_offset + vidLen_/*DstId*/ + 8/*Version*/+ field->offset();
 
   switch (field->type()) {
     case PropertyType::BOOL: {
@@ -244,7 +246,7 @@ Value RowWriter::getPosValueByIndex(int64_t pos, const int64_t index) const noex
 
 WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, bool v) noexcept {
   auto field = schema_->field(index);
-  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ + (pos-1)*(schema_->size()+vidLen_+8)+16+ sumStrLen_ +field->offset();
+  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ + (pos-1)*(schema_->size()+vidLen_+8)+vidLen_+8+ sumStrLen_ +field->offset();
   switch (field->type()) {
     case PropertyType::BOOL:
     case PropertyType::INT8:
@@ -270,7 +272,7 @@ WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, bool v) noexcept {
 
 WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, float v) noexcept {
   auto field = schema_->field(index);
-  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+16+ sumStrLen_ +field->offset();
+  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+vidLen_+8+ sumStrLen_ +field->offset();
   switch (field->type()) {
     case PropertyType::INT8: {
       if (v > std::numeric_limits<int8_t>::max() || v < std::numeric_limits<int8_t>::min()) {
@@ -323,7 +325,7 @@ WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, float v) noexcept {
 
 WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, double v) noexcept {
   auto field = schema_->field(index);
-  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+16+ sumStrLen_ + field->offset();
+  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+vidLen_+8+ sumStrLen_ + field->offset();
   switch (field->type()) {
     case PropertyType::INT8: {
       if (v > std::numeric_limits<int8_t>::max() || v < std::numeric_limits<int8_t>::min()) {
@@ -382,7 +384,7 @@ WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, uint8_t v) noexcept
 
 WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, int8_t v) noexcept {
   auto field = schema_->field(index);
-  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+16+ sumStrLen_+ field->offset();
+  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+vidLen_+8+ sumStrLen_+ field->offset();
   switch (field->type()) {
     case PropertyType::BOOL: {
       buf_[offset] = v == 0 ? 0x00 : 0x01;
@@ -429,7 +431,7 @@ WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, uint16_t v) noexcep
 
 WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, int16_t v) noexcept {
   auto field = schema_->field(index);
-  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+16+ sumStrLen_+ field->offset();
+  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+vidLen_+8+ sumStrLen_+ field->offset();
   switch (field->type()) {
     case PropertyType::BOOL: {
       buf_[offset] = v == 0 ? 0x00 : 0x01;
@@ -479,7 +481,7 @@ WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, uint32_t v) noexcep
 
 WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, int32_t v) noexcept {
   auto field = schema_->field(index);
-  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+16+ sumStrLen_+ field->offset();
+  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+vidLen_+8+ sumStrLen_+ field->offset();
   switch (field->type()) {
     case PropertyType::BOOL: {
       buf_[offset] = v == 0 ? 0x00 : 0x01;
@@ -532,7 +534,7 @@ WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, uint64_t v) noexcep
 
 WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, int64_t v) noexcept {
   auto field = schema_->field(index);
-  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+16+ sumStrLen_+ field->offset();
+  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+vidLen_+8+ sumStrLen_+ field->offset();
   switch (field->type()) {
     case PropertyType::BOOL: {
       buf_[offset] = v == 0 ? 0x00 : 0x01;
@@ -592,7 +594,7 @@ WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, const char* v) noex
 
 WriteResult RowWriter::multiwrite(int64_t pos,ssize_t index, Slice v) noexcept {
   auto field = schema_->field(index);
-  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+16+ sumStrLen_+ field->offset();
+  auto offset = headerLen_ + numNullBytes_ + 8 /*+ edgeNumber_*4*/ +(pos-1)*(schema_->size()+vidLen_+8)+vidLen_+8+ sumStrLen_+ field->offset();
   switch (field->type()) {
     case PropertyType::STRING: {
       int32_t strOffset;

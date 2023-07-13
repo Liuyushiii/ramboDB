@@ -5,7 +5,6 @@
 cmake_minimum_required(VERSION 3.9)
 # Keep the version below in sync with the one in db.h
 project(leveldb VERSION 1.23.0 LANGUAGES C CXX)
-
 # C standard can be overridden when this is used as a sub-project.
 if(NOT CMAKE_C_STANDARD)
   # This project can use C11, but will gracefully decay down to C89.
@@ -213,6 +212,7 @@ target_sources(leveldb
     "codec/RowWriter.cpp"
     "codec/Value.cpp"
 
+
   # Only CMake 3.3+ supports PUBLIC sources in targets exported by "install".
   $<$<VERSION_GREATER:CMAKE_VERSION,3.2>:PUBLIC>
     "${LEVELDB_PUBLIC_INCLUDE_DIR}/c.h"
@@ -307,11 +307,14 @@ find_package(TBB REQUIRED)
 # Needed by port_stdcxx.h
 find_package(Threads REQUIRED)
 target_link_libraries(leveldb Threads::Threads)
-
+target_link_libraries(leveldb TBB::tbb)
 add_executable(leveldbutil
   "db/leveldbutil.cc"
 )
 target_link_libraries(leveldbutil leveldb)
+
+find_package(Boost REQUIRED COMPONENTS system)
+target_link_libraries(leveldb ${Boost_LIBRARIES})
 
 if(LEVELDB_BUILD_TESTS)
   enable_testing()

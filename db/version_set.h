@@ -25,7 +25,11 @@
 #include "port/port.h"
 #include "port/thread_annotations.h"
 #include "rambo/Rambo_construction.h"
-
+#include <ctime>
+#include <boost/dynamic_bitset.hpp>
+#include <thread>
+#include <future>
+#include <tbb/tbb.h>
 namespace leveldb {
 
 namespace log {
@@ -60,48 +64,129 @@ bool SomeFileOverlapsRange(const InternalKeyComparator& icmp,
                            const Slice* largest_user_key);
 
 struct Epoch{
-  RAMBO* rambo_filter_;
+  std::shared_ptr<RAMBO> rambo_filter_;
   // std::vector<FileMetaData*> files_;
-  std::unordered_map<int,FileMetaData*> files_;
+  //std::unordered_map<int,FileMetaData*> files_;
+  std::unordered_map<std::string,int64_t>mp_;
+  std::map<int,FileMetaData*> files_;
+  //std::unordered_map<int,std::shared_ptr<BloomFiler>>bfilters_;//baseline
   int cur_count_,max_count_;
   int epoch_id_;
   int highest_bid;  //hightest block height served by table
   int lowest_bid;   //lowest block height served by table
 
-  Epoch(int epoch_id,int maxCount=100000)
+  Epoch(int epoch_id,int number=0,int maxCount=210000)
       :cur_count_(0),max_count_(maxCount),epoch_id_(epoch_id),highest_bid(INT32_MIN),lowest_bid(INT32_MAX){
-    rambo_filter_=new RAMBO(max_count_,3,10,100,0);
+    rambo_filter_=std::make_shared<RAMBO>(max_count_,3,7,100,number);
   }
+
 
   bool Full(){
     // return cur_count_>=max_count_;
-    return files_.size()>=10;
+    return files_.size()>=50;
   }
 
   void AppendFile(FileMetaData* file){
     files_[file->number]=file;
-    rambo_filter_->merge_another_rambo(*file->filter_);
-    delete file->filter_;
-    highest_bid=std::max(highest_bid,file->highest_bid);
-    lowest_bid=std::min(lowest_bid,file->lowest_bid);
-  }
-
-  void AddNewFileItem(const std::string& user_key){
-    // rambo_filter_->createMetaRambo_single(fileIndex);
-    int file_id=files_.size();
-    rambo_filter_->insertion_pair(std::pair<std::string,std::string>(user_key,std::to_string(file_id)));
-    cur_count_++;
-  }
-
-  std::vector<FileMetaData*> FilterKey(const std::string& user_key){
-    std::set<int> query_res=rambo_filter_->query_bias_set(user_key,user_key.size());
-    std::vector<FileMetaData*> res;
-    for(auto& fid:query_res){
-      res.emplace_back(files_[fid]);
+    int64_t d=((file->number-5)/2)%50;
+    rambo_filter_->createMetaRambo_single(file->number,d);
+    if(file->filter_ != nullptr){
+      rambo_filter_->merge_another_rambo(*file->filter_);
     }
-    // return res;
-    return res;
+    // if(file->bfilter_!=nullptr)
+    // {
+    //   bfilters_[file->number]=file->bfilter_;
+    // }
+
+    // if(file->ve!=nullptr)
+    // {
+    //   //std::cout<<"fid: "<<file->number<<" ve_size: "<<file->ve->size()<<std::endl;
+      
+    //   for(int i=0;i<file->ve->size();i++)
+    //   {
+    //     std::string k=file->ve->at(i).substr(0,8);
+    //     std::string x=file->ve->at(i).substr(8,8);
+    //     int64_t b;
+    //     memcpy(reinterpret_cast<void*>(&b), &x[0], sizeof(int64_t));
+    //     mp_[k]=mp_[k]|b;
+    //   }
+    //   file->ve->clear();
+    //   file->ve=nullptr;
+    // }else{
+    //   //std::cout<<"fid: "<<file->number<<" file_null"<<std::endl;
+    // }
+
+    //std::cout<<file->number<<": "<<file->lowest_bid<<"-"<<file->highest_bid<<std::endl;
+    //std::cout<<"mapsize: "<<mp_.size()<<std::endl;
+    lowest_bid=std::min(lowest_bid,file->lowest_bid);
+    highest_bid=std::max(highest_bid,file->highest_bid);
   }
+
+  std::vector<int> FilterKey(const std::string& user_key){
+    // clock_t begin, end;
+    // double ans;
+    // begin = clock();
+    // auto query_res=rambo_filter_->query_bias(user_key,user_key.size(),rambo_filter_->bias);
+     std::set<int> query_res=rambo_filter_->query_bias_set(user_key,user_key.size());
+    // end = clock();
+    // ans=double(end - begin) / CLOCKS_PER_SEC *1000;
+    // std::cout<<"time:"<<ans<<" ms"<<std::endl;
+    // std::vector<FileMetaData*> res;
+    // for(size_t fid=query_res.find_first(); fid!=boost::dynamic_bitset<>::npos;){
+    //   res.emplace_back(files_[fid+rambo_filter_->bias]);
+    //   fid=query_res.find_next(fid);
+    // }
+    // return res;
+    std::vector<int> res;
+    for(auto& fid:query_res){
+      //res.emplace_back(fid);
+      res.emplace_back(epoch_id_*100+5+fid*2);
+    }
+    return res;
+    // std::vector<FileMetaData*> res;
+    // for(auto& fid:query_res){
+    //   res.emplace_back(files_[fid]);
+    // }
+    // return res;
+  }
+
+  void self_check()
+  {
+    //rambo_filter_->out_set();
+    // std::cout<<"epoch_id: "<<epoch_id_<<" epochmp_size: "<<mp_.size()<<std::endl;
+    std::cout<<"range: "<<lowest_bid<<"-"<<highest_bid<<std::endl;
+    // int k[60];
+    // int r[60];
+    // for(int i=0;i<50;i++)
+    // {
+    //   k[i]=r[i]=0;
+    // }
+    // for(auto key:mp_)
+    // {
+    //   auto epoch_file=FilterKey(key.first);
+    //   std::vector<int>epoch_file_;
+    //   int64_t s=key.second;
+    //   int64_t d=0;
+    //   for(int64_t i=0;i<60;i++)
+    //   {
+    //     if(s&((int64_t)1 << i))
+    //     {
+    //       d++;
+    //     }
+    //   }
+    //   k[d]++;
+    //   r[d]+=epoch_file.size();
+    // }
+    // for(int i=0;i<50;i++)
+    // {
+    //   if(k[i]!=0)
+    //     std::cout<<"k: "<<i<<" num: "<<k[i]<<" true: "<<i*k[i]<<" filter: "<<r[i]<<" rate: "<<(1.0*r[i])/(k[i]*1.0)-i*1.0<<std::endl;
+    //   else
+    //     std::cout<<"k: "<<i<<" num: "<<k[i]<<" true: "<<i*k[i]<<" filter: "<<r[i]<<std::endl;
+    // }
+
+  }
+
 };
 
 
@@ -200,10 +285,10 @@ class Version {
   int refs_;          // Number of live refs to this version
 
   // List of files per level
-  //DTODO:Epoch相关数据
-  std::vector<Epoch*> epoches_;
   std::vector<FileMetaData*> files_[config::kNumLevels];
 
+  //DTODO:Epoch相关数据
+  std::vector<Epoch*> epoches_;
   // Next file to compact based on seek stats.
   FileMetaData* file_to_compact_;
   int file_to_compact_level_;

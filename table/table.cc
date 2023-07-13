@@ -161,6 +161,7 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
   BlockHandle handle;
   Slice input = index_value;
   Status s = handle.DecodeFrom(&input);
+  //std::cout<<"offset: "<<handle.offset()<<" size: "<<handle.size()<<std::endl;
   // We intentionally allow extra stuff in index_value so that we
   // can add more features in the future.
 
@@ -173,8 +174,10 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
       Slice key(cache_key_buffer, sizeof(cache_key_buffer));
       cache_handle = block_cache->Lookup(key);
       if (cache_handle != nullptr) {
+        //std::cout<<"have cache"<<std::endl;
         block = reinterpret_cast<Block*>(block_cache->Value(cache_handle));
       } else {
+        //std::cout<<"no cache"<<std::endl;
         s = ReadBlock(table->rep_->file, options, handle, &contents);
         if (s.ok()) {
           block = new Block(contents);
@@ -218,7 +221,7 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
   Status s;
   Iterator* iiter = rep_->index_block->NewIterator(rep_->options.comparator);
   iiter->Seek(k);
-  std::cout<<"InternalGet:"<<k.ToString()<<std::endl;
+  //std::cout<<"InternalGet:"<<k.ToString()<<std::endl;
   if (iiter->Valid()) {
     Slice handle_value = iiter->value();
     FilterBlockReader* filter = rep_->filter;
@@ -250,22 +253,23 @@ Status Table::InternalGetWithVersion(const ReadOptions& options, const Slice& k,
   Iterator* iiter = rep_->index_block->NewIterator(rep_->options.comparator);
   iiter->Seek(k);
   bool flag=false;
+  //bool ff=false;
   while (iiter->Valid()) {
-    Slice handle_value = iiter->value();
-    FilterBlockReader* filter = rep_->filter;
-    BlockHandle handle;
-    //DTODO:过滤器查询相关
-    if (filter != nullptr && handle.DecodeFrom(&handle_value).ok() &&
-        !filter->KeyMayMatch(handle.offset(), k)) {
-      // Not found
-    } else {
+    // Slice handle_value = iiter->value();
+    // FilterBlockReader* filter = rep_->filter;
+    // BlockHandle handle;
+    // //DTODO:过滤器查询相关
+    // if (filter != nullptr && handle.DecodeFrom(&handle_value).ok() &&
+    //     !filter->KeyMayMatch(handle.offset(), k)) {
+    //   // Not found
+    // } else {
       Iterator* block_iter = BlockReader(this, options, iiter->value());
       block_iter->Seek(k);
       while(block_iter->Valid())
       {
         bool f=(*handle_result)(arg, block_iter->key(), block_iter->value());
         if(!f)
-          block_iter->Next();
+          block_iter->Next()/*,ff=true*/;
         else{
           flag=true;
           break;
@@ -273,7 +277,7 @@ Status Table::InternalGetWithVersion(const ReadOptions& options, const Slice& k,
       }
       s = block_iter->status();
       delete block_iter;
-    }
+    //}
     if(flag==true)
       break;
     else
@@ -283,6 +287,10 @@ Status Table::InternalGetWithVersion(const ReadOptions& options, const Slice& k,
     s = iiter->status();
   }
   delete iiter;
+  // if(ff)
+  //   std::cout<<"yes";
+  // else
+  //   std::cout<<"no";
   return s;
 }
 

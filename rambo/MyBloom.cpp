@@ -11,9 +11,10 @@
 
 using namespace std;
 
-vector<uint> myhash( std::string key, int len, int k, int r, int range){
+vector<uint> myhash(const std::string& key, int len, int k, int r, int range){
   // int hashvals[k];
   vector <uint> hashvals;
+  hashvals.reserve(k);
   uint op; // takes 4 byte
 
   for (int i=0+ k*r; i<k+ k*r; i++){
@@ -23,20 +24,45 @@ vector<uint> myhash( std::string key, int len, int k, int r, int range){
   return hashvals;
 }
 
+void BloomFiler::binsert(std::string key)
+{
+  vector<uint> temp = myhash(key,key.size(),7,0,range);
+  insert(temp);
+}
+
+bool BloomFiler::btest(std::string key)
+{
+  vector<uint> check = myhash(key,key.size(),7,0,range);
+  return test(check);
+}
+
+std::string BloomFiler::toString(){
+  std::string buffer;
+  buffer.reserve(range/8+1);
+  buffer.append(std::string(m_bits->A,range/8+1));
+  return std::move(buffer);
+}
+
+void BloomFiler::decodeFrom(const char* str, size_t str_size){
+  int size_bloom=range/8+1;
+  memcpy(m_bits->A,str,size_bloom);
+}
+
 BloomFiler::BloomFiler(int sz, float FPR, int k){
       p = FPR;
       k = k; //number of hash
       m_bits = new bitArray(sz);
+      range=sz;
       }
 
-void BloomFiler::insert(vector<uint> a){
+void BloomFiler::insert(const vector<uint>& a){
   int N = a.size();
   for (int n =0 ; n<N; n++){
     m_bits->SetBit(a[n]);
   }
 }
 
-bool BloomFiler::test(vector<uint> a){
+bool BloomFiler::test(const vector<uint>& a){
   int N = a.size();
   for (int n =0 ; n<N; n++){
       if (!m_bits->TestBit(a[n])){

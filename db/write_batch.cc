@@ -35,8 +35,8 @@ WriteBatch::Handler::~Handler() = default;
 void WriteBatch::Clear() {
   rep_.clear();
   rep_.resize(kHeader);
-  highest_bid_=INT32_MIN;
   lowest_bid_=INT32_MAX;
+  highest_bid_=INT32_MIN;
 }
 
 size_t WriteBatch::ApproximateSize() const { return rep_.size(); }
@@ -68,6 +68,16 @@ Status WriteBatch::Iterate(Handler* handler) const {
           handler->Delete(key);
         } else {
           return Status::Corruption("bad WriteBatch Delete");
+        }
+        break;
+      case kRange:
+        if(GetVarint32(&input, (uint32_t*)&lowest_bid_) &&
+            GetVarint32(&input, (uint32_t*)&highest_bid_)){
+          handler->RecordRange(lowest_bid_,highest_bid_);
+          //printf("low: %d high: %d\n",lowest_bid_,highest_bid_);
+        }else{
+          
+          return Status::Corruption("bad Range Record");
         }
         break;
       default:
@@ -116,6 +126,18 @@ void WriteBatch::Append(const WriteBatch& source) {
   WriteBatchInternal::Append(this, &source);
 }
 
+void WriteBatch::RecordRange(){
+  rep_.push_back(static_cast<char>(kRange));
+  PutVarint32(&rep_, lowest_bid_);
+  PutVarint32(&rep_, highest_bid_);
+  // std::string rep="";
+  // rep.push_back(static_cast<char>(kRange));
+  // PutVarint32(&rep, lowest_bid_);
+  // PutVarint32(&rep, highest_bid_);
+  // rep.append(rep_);
+  // rep_=rep;
+}
+
 namespace {
 class MemTableInserter : public WriteBatch::Handler {
  public:
@@ -130,6 +152,10 @@ class MemTableInserter : public WriteBatch::Handler {
     mem_->Add(sequence_, kTypeDeletion, key, Slice());
     sequence_++;
   }
+  void RecordRange(int low,int high) override {
+    mem_->lowest_bid=std::min(mem_->lowest_bid,low);
+    mem_->highest_bid=std::max(mem_->highest_bid,high);
+  }
 };
 }  // namespace
 
@@ -137,8 +163,8 @@ Status WriteBatchInternal::InsertInto(const WriteBatch* b, MemTable* memtable) {
   MemTableInserter inserter;
   inserter.sequence_ = WriteBatchInternal::Sequence(b);
   inserter.mem_ = memtable;
-  memtable->highest_bid=std::max(memtable->highest_bid,b->highest_bid_);
-  memtable->lowest_bid=std::min(memtable->lowest_bid,b->lowest_bid_);
+  // memtable->highest_bid=std::max(memtable->highest_bid,b->highest_bid_);
+  // memtable->lowest_bid=std::min(memtable->lowest_bid,b->lowest_bid_);
   return b->Iterate(&inserter);
 }
 

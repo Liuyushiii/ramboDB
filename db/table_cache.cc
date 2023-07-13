@@ -47,6 +47,7 @@ Status TableCache::FindTable(uint64_t file_number, uint64_t file_size,
   Slice key(buf, sizeof(buf));
   *handle = cache_->Lookup(key);
   if (*handle == nullptr) {
+    //std::cout<<"nocache"<<std::endl;
     std::string fname = TableFileName(dbname_, file_number);
     RandomAccessFile* file = nullptr;
     Table* table = nullptr;
@@ -72,6 +73,8 @@ Status TableCache::FindTable(uint64_t file_number, uint64_t file_size,
       tf->table = table;
       *handle = cache_->Insert(key, tf, 1, &DeleteEntry);
     }
+  }else{
+    //std::cout<<"yescache"<<std::endl;
   }
   return s;
 }

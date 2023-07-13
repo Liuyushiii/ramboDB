@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated>
+      <config projectName="leveldb" targetName="gtest" />
+      <config projectName="leveldb" targetName="env_posix_test" />
+      <config projectName="leveldb" targetName="leveldbutil" />
+      <config projectName="leveldb" targetName="gmock_main" />
+      <config projectName="leveldb" targetName="db_bench" />
+      <config projectName="leveldb" targetName="db_bench_sqlite3" />
+      <config projectName="leveldb" targetName="rambo_test" />
+      <config projectName="leveldb" targetName="gtest_main" />
+      <config projectName="leveldb" targetName="leveldb" />
+      <config projectName="leveldb" targetName="leveldb_tests" />
+      <config projectName="leveldb" targetName="c_test" />
+      <config projectName="leveldb" targetName="benchmark" />
+      <config projectName="leveldb" targetName="benchmark_main" />
+      <config projectName="leveldb" targetName="gmock" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="87b1d1c2-7a9f-4328-83ea-e15b529d3e0f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/codec/RowWriter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/codec/RowWriter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/builder.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/builder.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/c.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/c.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/c_test.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/c_test.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/db_impl.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_impl.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/db_impl.h" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_impl.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/db_test.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/db_test.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/dbformat.h" beforeDir="false" afterPath="$PROJECT_DIR$/db/dbformat.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/dumpfile.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/dumpfile.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/memtable.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/memtable.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/table_cache.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/table_cache.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/version_edit.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/version_edit.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/version_edit.h" beforeDir="false" afterPath="$PROJECT_DIR$/db/version_edit.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/version_set.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/version_set.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/version_set.h" beforeDir="false" afterPath="$PROJECT_DIR$/db/version_set.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/write_batch.cc" beforeDir="false" afterPath="$PROJECT_DIR$/db/write_batch.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/leveldb/options.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/leveldb/options.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/leveldb/write_batch.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/leveldb/write_batch.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rambo/MurmurHash3.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/rambo/MurmurHash3.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rambo/MyBloom.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/rambo/MyBloom.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rambo/MyBloom.h" beforeDir="false" afterPath="$PROJECT_DIR$/rambo/MyBloom.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rambo/Rambo_construction.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/rambo/Rambo_construction.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rambo/Rambo_construction.h" beforeDir="false" afterPath="$PROJECT_DIR$/rambo/Rambo_construction.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rambo/bitArray.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/rambo/bitArray.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rambo/rambo_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/rambo/rambo_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/table/block.cc" beforeDir="false" afterPath="$PROJECT_DIR$/table/block.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/table/table.cc" beforeDir="false" afterPath="$PROJECT_DIR$/table/table.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/benchmark/tools/compare.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/benchmark/tools/compare.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/benchmark/tools/strip_asm.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/benchmark/tools/strip_asm.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/fuse_gmock_files.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/fuse_gmock_files.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/ast.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/ast.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/gmock_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/gmock_class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/gmock_class_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/gmock_class_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/keywords.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/keywords.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/tokenize.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/tokenize.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/cpp/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/gmock_gen.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/scripts/generator/gmock_gen.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/test/gmock_leak_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/test/gmock_leak_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/test/gmock_output_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/test/gmock_output_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googlemock/test/gmock_test_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googlemock/test/gmock_test_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/fuse_gtest_files.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/fuse_gtest_files.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/gen_gtest_pred_impl.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/gen_gtest_pred_impl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/gtest-config.in" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/gtest-config.in" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/release_docs.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/release_docs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/run_with_path.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/run_with_path.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/upload.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/upload_gtest.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/scripts/upload_gtest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-break-on-failure-unittest.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-break-on-failure-unittest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-catch-exceptions-test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-catch-exceptions-test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-color-test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-color-test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-env-var-test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-env-var-test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-failfast-unittest.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-failfast-unittest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-filter-unittest.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-filter-unittest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-list-tests-unittest.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-list-tests-unittest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-output-test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-output-test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-setuptestsuite-test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-setuptestsuite-test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-shuffle-test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-shuffle-test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-throw-on-failure-test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-throw-on-failure-test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-uninitialized-test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/googletest-uninitialized-test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_help_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_help_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_skip_check_output_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_skip_check_output_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_skip_environment_check_output_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_skip_environment_check_output_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_test_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_test_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_testbridge_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_testbridge_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_xml_outfiles_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_xml_outfiles_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_xml_output_unittest.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_xml_output_unittest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_xml_test_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/third_party/googletest/googletest/test/gtest_xml_test_utils.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2023" />
+    <option name="minorVersion" value="2" />
+  </component>
+  <component name="ProjectId" id="2Rgb08iT4nw6qF5bXlrKrxKft4H" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "ctest.advertisement.all.test.configuration.is.created": "true",
+    "git-widget-placeholder": "Epoch结构",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RdControllerToolWindowsLayoutState" isNewUi="false">
+    <layout>
+      <window_info id="Commit_Guest" />
+      <window_info id="Space Code Reviews" order="0" />
+      <window_info id="Bookmarks" order="1" side_tool="true" />
+      <window_info id="Merge Requests" order="2" />
+      <window_info id="Structure" order="3" side_tool="true" />
+      <window_info id="Pull Requests" order="4" />
+      <window_info active="true" content_ui="combo" id="Project" order="5" visible="true" weight="0.23367347" />
+      <window_info id="Commit" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="0" weight="0.3300721" />
+      <window_info anchor="bottom" id="CMake" order="1" weight="0.3877446" />
+      <window_info anchor="bottom" id="Database Changes" order="2" weight="0.3300721" />
+      <window_info anchor="bottom" id="TypeScript" order="3" />
+      <window_info anchor="bottom" id="Build" order="4" weight="0.3300721" />
+      <window_info anchor="bottom" id="Python Packages" order="5" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Messages" order="7" weight="0.53501546" />
+      <window_info anchor="bottom" id="File Transfer" order="8" />
+      <window_info active="true" anchor="bottom" id="Run" order="9" visible="true" weight="0.31501633" />
+      <window_info anchor="bottom" id="Problems View" order="10" />
+      <window_info anchor="bottom" id="Terminal" order="11" weight="0.3300721" />
+      <window_info anchor="bottom" id="Services" order="12" />
+      <window_info anchor="bottom" id="Vcpkg" order="13" />
+      <window_info anchor="bottom" id="clangd" order="14" />
+      <window_info anchor="right" id="Database" order="0" />
+      <window_info anchor="right" id="make" order="1" show_stripe_button="false" side_tool="true" />
+      <window_info anchor="right" id="Notifications" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="RunManager" selected="CMake Application.c_test">
+    <configuration name="leveldb_tests" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="leveldb_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="leveldb_tests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="leveldb_tests" type="CMakeGoogleTestRunConfigurationType" factoryName="Google Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="leveldb_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="leveldb_tests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="benchmark" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="benchmark" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="benchmark" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="benchmark" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="benchmark_main" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="benchmark_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="benchmark_main" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="benchmark_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="c_test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="c_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="c_test">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="c_test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="c_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="c_test">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="db_bench" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="db_bench" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="db_bench">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="db_bench" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="db_bench" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="db_bench">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="db_bench_sqlite3" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="db_bench_sqlite3" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="db_bench_sqlite3">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="db_bench_sqlite3" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="db_bench_sqlite3" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="db_bench_sqlite3">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="env_posix_test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="env_posix_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="env_posix_test">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="env_posix_test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="env_posix_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="env_posix_test">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gmock" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="gmock" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gmock" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="gmock" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gmock_main" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="gmock_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gmock_main" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="gmock_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gtest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="gtest" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gtest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="gtest" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gtest_main" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="gtest_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gtest_main" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="gtest_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="leveldb" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="leveldb" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="leveldb" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="leveldb" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="leveldbutil" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="leveldbutil" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="leveldbutil">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="leveldbutil" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="leveldbutil" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="leveldbutil">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="rambo_test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="rambo_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="rambo_test">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="rambo_test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="rambo_test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="leveldb" RUN_TARGET_NAME="rambo_test">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="All CTest" type="CTestRunConfiguration" factoryName="CTestRun" PROGRAM_PARAMS="--extra-verbose" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$CMakeCurrentLocalGenerationDir$" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_PATH="$CTestCurrentExecutableName$" EXPLICIT_BUILD_TARGET_NAME="all" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="All CTest" type="CTestRunConfiguration" factoryName="CTestRun" PROGRAM_PARAMS="--extra-verbose" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$CMakeCurrentLocalGenerationDir$" PASS_PARENT_ENVS_2="true" RUN_PATH="$CTestCurrentExecutableName$" EXPLICIT_BUILD_TARGET_NAME="all" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="boost_test.cpp" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="boost_test.cpp" CONFIG_NAME="boost_test.cpp">
+      <option name="compilerOptions" value="-lboost_system" />
+      <option name="sourceFile" value="db/boost_test.cpp" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="boost_test.cpp" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="leveldb" TARGET_NAME="boost_test.cpp" CONFIG_NAME="boost_test.cpp">
+      <option name="sourceFile" value="db/boost_test.cpp" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="C/C++ File.boost_test.cpp" />
+      <item itemvalue="CMake Application.c_test" />
+      <item itemvalue="CMake Application.db_bench" />
+      <item itemvalue="CMake Application.db_bench_sqlite3" />
+      <item itemvalue="CMake Application.env_posix_test" />
+      <item itemvalue="CMake Application.leveldb" />
+      <item itemvalue="CMake Application.leveldbutil" />
+      <item itemvalue="CMake Application.rambo_test" />
+      <item itemvalue="CMake Application.benchmark" />
+      <item itemvalue="CMake Application.benchmark_main" />
+      <item itemvalue="CMake Application.gmock" />
+      <item itemvalue="CMake Application.gmock_main" />
+      <item itemvalue="CMake Application.gtest" />
+      <item itemvalue="CMake Application.gtest_main" />
+      <item itemvalue="CTest Application.All CTest" />
+      <item itemvalue="Google Test.leveldb_tests" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="C/C++ File.boost_test.cpp" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="87b1d1c2-7a9f-4328-83ea-e15b529d3e0f" name="Changes" comment="" />
+      <created>1687674445920</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1687674445920</updated>
+      <workItem from="1687674449121" duration="40000" />
+      <workItem from="1687674508020" duration="4022000" />
+      <workItem from="1687680990709" duration="6719000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VCPKGProject">
+    <isAutomaticEditVcpkgJson value="false" />
+    <isAutomaticCheckingOnLaunch value="false" />
+    <isAutomaticFoundErrors value="true" />
+    <isAutomaticFoundErrors value="true" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

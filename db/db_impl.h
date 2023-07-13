@@ -17,7 +17,7 @@
 #include "leveldb/env.h"
 #include "port/port.h"
 #include "port/thread_annotations.h"
-
+#include <tbb/tbb.h>
 namespace leveldb {
 
 class MemTable;
@@ -203,6 +203,9 @@ class DBImpl : public DB {
   Status bg_error_ GUARDED_BY(mutex_);
 
   CompactionStats stats_[config::kNumLevels] GUARDED_BY(mutex_);
+
+  //
+  tbb::task_arena arena_;
 };
 
 // Sanitize db options.  The caller should delete result.info_log if

@@ -138,26 +138,22 @@ bool MemTable::Get(const LookupKey& key, std::string* value, Status* s) {
 
 bool MemTable::GetWithVersion(const LookupKey& key, std::string* value, Status* s, const std::string& finalkey) {
   Slice memkey = key.memtable_key();
-  Slice user=key.user_key();
+  /*Slice user=key.user_key();
   std::string use;
   use.assign(user.data(),user.size());
-  std::cout<<"data: "<<use<<"size: "<<user.size()<<std::endl;
+  std::cout<<"data: "<<use<<"size: "<<user.size()<<std::endl;*/
   Table::Iterator iter(&table_);
   iter.Seek(memkey.data());
-  std::cout<<"final:"<<finalkey<<std::endl;
+  //std::cout<<"final:"<<finalkey<<std::endl;
   int64_t num=0;
-  std::cout<<"size:"<<value->size()<<std::endl;
+  //std::cout<<"size:"<<value->size()<<std::endl;
   if(value->size()!=8)
   {
-    std::cout<<"YES"<<std::endl;
+    //std::cout<<"YES"<<std::endl;
     memcpy(reinterpret_cast<void*>(&num), &(*value)[0], sizeof(int64_t));
   }
-  std::cout<<"num: "<<num<<std::endl;
+  //std::cout<<"num: "<<num<<std::endl;
   std::string sum="";
-  if(!iter.Valid())
-  {
-    std::cout<<"not found"<<std::endl;
-  }
   int64_t front=0;
   while (iter.Valid()) {
     // entry format is:
@@ -172,14 +168,14 @@ bool MemTable::GetWithVersion(const LookupKey& key, std::string* value, Status* 
     const char* entry = iter.key();
     uint32_t key_length;
     const char* key_ptr = GetVarint32Ptr(entry, entry + 5, &key_length);
-    Slice getkey(key_ptr, key_length - 8);
+    /*Slice getkey(key_ptr, key_length - 8);
     std::string c;
     c.assign(getkey.data(),getkey.size());
     int64_t vv;
     memcpy(reinterpret_cast<char*>(&vv),&c[8],sizeof(int64_t));
     int64_t to=ramboreverse_int64(vv);
-    std::cout<<"getkey: "<<c<<" version: "<<to<<" front_version: "<<front;
-    front=to;
+    std::cout<<"getkey: "<<c<<" version: "<<to<<" front_version: "<<front<<std::endl;
+    front=to;*/
     if (comparator_.comparator.user_comparator()->Compare(
             Slice(key_ptr, key_length - 8), finalkey) <= 0) {
       // Correct user key
@@ -191,7 +187,6 @@ bool MemTable::GetWithVersion(const LookupKey& key, std::string* value, Status* 
           x.assign(v.data(),v.size());
           int64_t n;
           memcpy(reinterpret_cast<void*>(&n), &x[0], sizeof(int64_t));
-          std::cout<<"n=:"<<n<<std::endl;
           num+=n;
           sum.append(x.substr(8,x.size()-8));
         }
@@ -203,17 +198,18 @@ bool MemTable::GetWithVersion(const LookupKey& key, std::string* value, Status* 
       break;
     }
   }
-  if(num==0)
+  if(num==0&&value->size()==8)
   {
     *s = Status::NotFound(Slice());
     return false;
   }
-  std::cout<<"finalnum=:"<<num<<std::endl;
   memcpy(&(*value)[0],reinterpret_cast<void*>(&num) ,sizeof(int64_t));
-  int64_t n;
-  memcpy(reinterpret_cast<void*>(&n), &(*value)[0], sizeof(int64_t));
-  std::cout<<"finaln=:"<<n<<std::endl;
+  // int64_t n;
+  // memcpy(reinterpret_cast<void*>(&n), &(*value)[0], sizeof(int64_t));
+  //std::cout<<"finaln=:"<<n<<std::endl;
   value->append(sum);
+  
+  
   return true;
 }
 

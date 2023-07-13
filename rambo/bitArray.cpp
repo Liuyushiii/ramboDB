@@ -8,9 +8,9 @@ using namespace std;
 bitArray::bitArray(int size){
   ar_size = size;
   A = new char[ar_size/8 +1];
-   for (int i=0; i<(ar_size/8 +1); i++ ){
-     A[i] = '\0'; // Clear the bit array
-   }
+  for (int i=0; i<(ar_size/8 +1); i++ ){
+    A[i] = '\0'; // Clear the bit array
+  }
 }
 void bitArray::bitArray_delete()
 {
@@ -38,7 +38,7 @@ void bitArray::ANDop(char* B){
 }
 
 void bitArray::ORop(char* B){
-  for (int i=0; i<(ar_size/8 +1); i++ ){
+  for (int i=0; i<(ar_size/8 +1); ++i ){
     A[i] |= B[i];
   }
 }
@@ -58,7 +58,7 @@ int bitArray::getcount(void){
 void bitArray::serializeBitAr(string BF_file){
   ofstream out;
   out.open(BF_file);
-
+  
   if(! out){
     cout<<"Cannot open output file\n";
   }
