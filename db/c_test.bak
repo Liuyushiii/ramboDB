@@ -181,46 +181,24 @@ std::vector<EdgeResult> edges;
 // 模拟node数据
 std::string get_nodes(){
       json arr = json::array();
-      std::cout<<"node:"<<nodes.size()<<std::endl;
+      std::cout<<"size of nodes: "<<nodes.size()<<std::endl;
       for(int i=0;i<nodes.size();i++)
       {
-        // arr.push_back(json{
-        //   {"id",node.address}
-        // });
         arr.push_back(json{
             {"id", nodes[i].address},
-            {"degree", 2},
+            {"degree", 0},
             {"cluster", 0}
         });
       }
-      // arr.push_back(json{
-      //       {"id", "0x75cd2467f8dd731a5acb927bd79c4cb361210db6"},
-      //       {"degree", 2},
-      //       {"cluster", -1}
-      //   });
-      // arr.push_back(json{
-      //       {"id", "0x8bc90377daf1b4e71686d025c88b2178089cf3e8"},
-      //       {"degree", 11},
-      //       {"cluster", -1}
-      // });
       std::string json_data = arr.dump(); // 转换为字符串
       return "\"nodes\":"+json_data;
 }
 // 模拟edge数据
 std::string get_edges(){
       json arr = json::array();
-      std::cout<<edges.size()<<std::endl;
+      std::cout<<"size of edges: "<<edges.size()<<std::endl;
       for(int i=0;i<edges.size();i++)
       {
-        // arr.push_back(json{
-        //   {"source", edge.from_address}, 
-        //   {"target", edge.to_address}, 
-        //   {"block",edge.block},
-        //   {"value", edge.value}
-        // });
-        // std::cout<<edges[i].from_address<<std::endl;
-        // std::cout<<edges[i].to_address<<std::endl;
-        // std::cout<<edges[i].value<<std::endl;
         arr.push_back(json{
           {"source", edges[i].from_address}, 
           {"target", edges[i].to_address}, 
@@ -228,12 +206,6 @@ std::string get_edges(){
           {"tx_hash", edges[i].to_address}
         });
       }
-      // arr.push_back(json{
-      //       {"source", "0x75cd2467f8dd731a5acb927bd79c4cb361210db6"}, 
-      //       {"target", "0x8bc90377daf1b4e71686d025c88b2178089cf3e8"}, 
-      //       {"value", 123},
-      //       {"tx_hash", "0x119cc3472b2137a5c9b28cdc37c3c9daf5fe757d142e1ae7603007b5711ed385"}
-      //   });
       std::string json_data = arr.dump(); // 转换为字符串
       return "\"edges\":"+json_data;
 }
@@ -242,8 +214,8 @@ std::string get_edges_and_nodes(){
   std::stringstream ss;
   ss << "{";
   ss << get_edges();
-  ss << ",";
-  ss << get_nodes();
+  // ss << ",";
+  // ss << get_nodes();
   ss << "}";
   return ss.str();
 }
@@ -279,7 +251,6 @@ std::unordered_map<std::string, std::string> parse_params(const std::string& req
       value = key.substr(sep_pos + 1);
       key = key.substr(0, sep_pos);
     }
-
     params_map[key] = value;
   }
 
@@ -298,7 +269,6 @@ std::unordered_map<std::string, std::string> parse_params(const std::string& req
 
 double k_top(leveldb::DB* db, std::string key, int64_t startv,int64_t endv, int64_t step)
 {
-  std::cout << "key: " << key << std::endl;
   std::cout << "executing " << step << " hop on " << address_f[key] << " from " << startv << " to " << endv << std::endl;
   std::map<std::string,int>mp;
   leveldb::ReadOptions read_option;
@@ -400,10 +370,10 @@ double k_top(leveldb::DB* db, std::string key, int64_t startv,int64_t endv, int6
     q=qq;
     qq.clear();
   }
-  std::cout<<"sss="<<sss<<std::endl;
-  std::cout << "node: " << nodes.size() << std::endl;
-  std::cout << "edge: " << edges.size() << std::endl;
-  std::cout<<sum_ans+read_sumtime<<std::endl;
+  // std::cout<<"sss="<<sss<<std::endl;
+  // std::cout << "node: " << nodes.size() << std::endl;
+  // std::cout << "edge: " << edges.size() << std::endl;
+  // std::cout<<sum_ans+read_sumtime<<std::endl;
   //return sum;
   return sum_ans+read_sumtime;
 }
@@ -426,21 +396,6 @@ double rating_test(leveldb::DB* db,int64_t s, int64_t rate)
     std::cout<<std::endl;
   }
   std::cout<<std::endl;
-
-  // std::cout<<"----5hop----"<<std::endl;
-  // T=1;
-  // while(T--)
-  // {
-  //   double sumans=0;
-  //   for(int i=1;i<=5;i++)
-  //   {
-  //     sumans+=k_top(db,testo[i].add_new,testo[i].l,testo[i].range,5);
-  //   }
-  //   //sumans+=k_top(db,testo[102].add_new,testo[102].l,testo[102].range,2);
-  //   //sumans+=k_top(db,testo[108].add_new,testo[108].l,testo[108].range,2);
-  //   std::cout<<"5hop_time: "<<sumans<<std::endl;
-  //   std::cout<<std::endl;
-  // }
   std::cout<<std::endl;
   return ans;
 }
@@ -512,7 +467,7 @@ void eth_dbTest(){
   leveldb::Options opts;
   //opts.block_cache=leveldb::NewLRUCache(1000*1048576);
   opts.create_if_missing = true;
-  leveldb::Status s=leveldb::DB::Open(opts,"/tmp/ramboDBtest_base",&db);
+  leveldb::Status s=leveldb::DB::Open(opts,"/eth_data/database/ramboDBtest_rambo_usdt",&db);
   leveldb::WriteBatch batch1;
   //return ;
   std::string db_state;
@@ -528,7 +483,7 @@ void eth_dbTest(){
 
   double q;
   std::cout << "start test" << std::endl;
-  q=rating_test(db,1,1);
+  // q=rating_test(db,1,1);
 
   
   //开始监听
@@ -559,8 +514,9 @@ void eth_dbTest(){
     std::unordered_map<std::string, std::string> params = parse_params(first_line);
     // 输出解析结果
     std::string query_type,address,contract;
+    std::vector<std::string> address_vec;
     int64_t start,end,step;
-    std::cout << "键值对数据: " << std::endl;
+    std::cout << "==========decoded data==========" << std::endl;
     for (const auto& kv : params) {
         std::cout << kv.first << ": " << kv.second << std::endl;
         if (kv.first == "query_type"){
@@ -577,28 +533,16 @@ void eth_dbTest(){
           step=std::atoi(kv.second.c_str());
         }else if(kv.first=="address")
         {
+          // std::cout << "address: " << kv.second << std::endl;
           std::string tmp_add = kv.second.substr(2,40);
-          std::cout << "tmp_add: " << tmp_add << std::endl;
           int64_t add=static_cast<int64_t>(leveldb::Hash(tmp_add.c_str(),tmp_add.size(),0xbc9f1d34));
           address.append(8,'0');
           memcpy(&address[0],reinterpret_cast<void*>(&add),sizeof(int64_t));
         }
-        
     }
+    std::cout << "=========================" << std::endl;
 
-// 0xe91a946f836e0da5072737655a9b9a44fd701e58
-      // std::string test_add = "e91a946f836e0da5072737655a9b9a44fd701e58";
-      // int64_t add=static_cast<int64_t>(leveldb::Hash(test_add.c_str(),test_add.size(),0xbc9f1d34));
-      // std::string input;
-      // input.append(8,'0');
-      // memcpy(&input[0],reinterpret_cast<void*>(&add),sizeof(int64_t));
-      // double bbb=k_top(db,input,13148345,14267746,1);
-
-
-    double aaa;
-    std::cout << "test: " << address << std::endl;
-    aaa=k_top(db,address,start,end,step+1);
-    std::cout<<"--end--"<<std::endl;
+    double elapsed_time = k_top(db,address,start,end,step);
 
     // 构造HTTP响应
     std::string response_json = get_edges_and_nodes();
@@ -625,11 +569,6 @@ void rambo_test(){
 }
 
 int main(int argc, char** argv) {
-  // ramboTest();
-  //dbTest();
-
-
   eth_dbTest();
-  //rambo_test();
   return 0;
 }

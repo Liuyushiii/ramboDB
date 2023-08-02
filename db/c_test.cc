@@ -24,6 +24,7 @@
 #include <nlohmann/json.hpp>
 #include <unordered_map>
 #include <boost/asio.hpp>
+#include <cctype>
 #define ACCOUNT_RANGE 1000000
 #define random(x) (rand()%x)
 std::string sha256(const std::string &srcStr) {
@@ -42,7 +43,7 @@ struct Tx{
   std::string from_address;
   std::string to_address;
   int64_t value;
-}tx[1005];
+}tx[100005];
 bool cmp(Tx a, Tx b)
 {
   return a.from_address<b.from_address;
@@ -175,9 +176,33 @@ struct NodeResult{
     address=a;
   }
 };
+struct QueryResult{
+  std::string address;
+  double elapsed_time;
+  QueryResult(){};
+  QueryResult(std::string address_, double elapsed_time_)
+  {
+    address = address_;
+    elapsed_time = elapsed_time_;
+  }
+};
 std::vector<NodeResult> nodes;
 std::vector<EdgeResult> edges;
+std::vector<QueryResult> queryResults;
 
+std::string get_results(){
+      json arr = json::array();
+      std::cout<<"size of query results: "<<queryResults.size()<<std::endl;
+      for(int i=0;i<queryResults.size();i++)
+      {
+        arr.push_back(json{
+            {"address", queryResults[i].address},
+            {"elapsed_time", queryResults[i].elapsed_time}
+        });
+      }
+      std::string json_data = arr.dump(); // 转换为字符串
+      return "\"queryResults\":"+json_data;
+}
 // 模拟node数据
 std::string get_nodes(){
       json arr = json::array();
@@ -219,10 +244,21 @@ std::string get_edges_and_nodes(){
   ss << "}";
   return ss.str();
 }
+
+std::string get_edges_and_queryResults(){
+  std::stringstream ss;
+  ss << "{";
+  ss << get_edges();
+  ss << ",";
+  ss << get_results();
+  ss << "}";
+  return ss.str();
+}
+
 // 解析请求参数，将键值对存储到unordered_map中
 std::unordered_map<std::string, std::string> parse_params(const std::string& request) {
 
-  // std::cout << "request: " << request << std::endl;
+  std::cout << "request: " << request << std::endl;
 
   std::unordered_map<std::string, std::string> params_map;
 
@@ -251,8 +287,9 @@ std::unordered_map<std::string, std::string> parse_params(const std::string& req
       value = key.substr(sep_pos + 1);
       key = key.substr(0, sep_pos);
     }
-
-    params_map[key] = value;
+    if (value != "") {
+      params_map[value] = key;
+    }
   }
 
   // 处理最后一个键值对
@@ -260,7 +297,9 @@ std::unordered_map<std::string, std::string> parse_params(const std::string& req
   if (sep_pos != std::string::npos) {
     key = params.substr(0, sep_pos);
     value = params.substr(sep_pos + 1);
-    params_map[key] = value;
+    if (value != "") {
+      params_map[value] = key;
+    }
   }
 
   return params_map;
@@ -284,8 +323,8 @@ double k_top(leveldb::DB* db, std::string key, int64_t startv,int64_t endv, int6
   double sum_ans=0,read_sumtime=0;
   double ans;
   //std::cout<<"block:"<<startv<<"-"<<endv<<std::endl;
-  nodes.clear();
-  edges.clear();
+  // nodes.clear();
+  // edges.clear();
   for(int i=1;i<=step;i++)
   {
     if(q.size()==0)
@@ -397,63 +436,27 @@ double rating_test(leveldb::DB* db,int64_t s, int64_t rate)
     std::cout<<std::endl;
   }
   std::cout<<std::endl;
-
-  // std::cout<<"----5hop----"<<std::endl;
-  // T=1;
-  // while(T--)
-  // {
-  //   double sumans=0;
-  //   for(int i=1;i<=5;i++)
-  //   {
-  //     sumans+=k_top(db,testo[i].add_new,testo[i].l,testo[i].range,5);
-  //   }
-  //   //sumans+=k_top(db,testo[102].add_new,testo[102].l,testo[102].range,2);
-  //   //sumans+=k_top(db,testo[108].add_new,testo[108].l,testo[108].range,2);
-  //   std::cout<<"5hop_time: "<<sumans<<std::endl;
-  //   std::cout<<std::endl;
-  // }
   std::cout<<std::endl;
   return ans;
 }
-void solve_usdt()
+void solve_usdt(std::string account_path)
 {
   std::ifstream readFile;
-  readFile.open("/home/z/test_data/5hop.txt",std::ios::in);
-  int x=0;
-  if (readFile.is_open())
-	{
-    std::string str,l,r;
-    int64_t ll,rr;
-		while (getline(readFile,str))
-		{
-      ++x;
-      std::string from=str.substr(2,40);
-      int pos1=42;
-      int pos2=str.find("-");
-      int pos3=str.find(":");
-      l=str.substr(pos1+1,pos2-pos1);
-      r=str.substr(pos2+1,pos3-pos2);
-      ll=std::atoi(l.c_str());
-      rr=std::atoi(r.c_str());
-      int64_t add=static_cast<int64_t>(leveldb::Hash(from.c_str(),from.size(),0xbc9f1d34));
-      std::string from_address="";
-      from_address.append(8,'0');
-      memcpy(&from_address[0],reinterpret_cast<void*>(&add),sizeof(int64_t));
-      //std::cout<<"0x"<<from<<" "<<ll<<" to "<<rr<<std::endl;
-      testo[x]=Testo(from,from_address,ll,rr,1);
-    }
-  }
-  readFile.close();
 
   tq=0;
   int qt=0;
-  readFile.open("/eth_data/usdt/modified_data/new_accounts.txt",std::ios::in);
+  readFile.open(account_path, std::ios::in);
+
   if (readFile.is_open())
 	{
+      
     std::string str,l,r;
     int64_t ll,rr;
     while (getline(readFile,str))
     {
+      if (str.empty()) {
+        continue;
+      }
       std::string from=str.substr(2,40);
       int64_t add=static_cast<int64_t>(leveldb::Hash(from.c_str(),from.size(),0xbc9f1d34));
       std::string from_address="";
@@ -471,25 +474,32 @@ int edn=0;
 std::vector<int64_t> addnum[20005];
 namespace boost{
 void throw_exception(std::exception const & ex)
-{
-  std::cout<<"error"<<std::endl;
-}
+  {
+    std::cout<<"error"<<std::endl;
+  }
 }
 
-void eth_dbTest(){
+void clear_vec(){
+  nodes.clear();
+  edges.clear();
+}
+
+void eth_dbTest(std::string db_path, std::string account_path, int port){
   // leveldb::Env* env=leveldb::Env::Default();
   std::cout << "open database" << std::endl;
   leveldb::DB* db=nullptr;
   leveldb::Options opts;
   //opts.block_cache=leveldb::NewLRUCache(1000*1048576);
   opts.create_if_missing = true;
-  leveldb::Status s=leveldb::DB::Open(opts,"/tmp/ramboDBtest_base",&db);
+  // leveldb::Status s=leveldb::DB::Open(opts,"/eth_data/database/ramboDBtest_rambo_usdt",&db);
+  leveldb::Status s=leveldb::DB::Open(opts,db_path,&db);
+  // usdt_1600_1700
   leveldb::WriteBatch batch1;
   //return ;
   std::string db_state;
 
   std::cout << "read test data" << std::endl;
-  solve_usdt();
+  solve_usdt(account_path);
 
   std::ifstream readFile;
   int64_t nownumber;
@@ -505,10 +515,10 @@ void eth_dbTest(){
   //开始监听
   boost::asio::io_service io_service;
   // 创建一个TCP endpoint并绑定到本地8010端口
-  tcp::endpoint endpoint(tcp::v4(), 8030);
+  tcp::endpoint endpoint(tcp::v4(), port);
   // 创建一个TCP acceptor并开始监听连接
   tcp::acceptor acceptor(io_service, endpoint);
-  std::cout << "Listening on port 8030..." << std::endl;
+  std::cout << "Listening on port "<< port << "..." << std::endl;
 
   while (true) {
     // 等待连接
@@ -529,42 +539,66 @@ void eth_dbTest(){
     // 解析请求参数
     std::unordered_map<std::string, std::string> params = parse_params(first_line);
     // 输出解析结果
-    std::string query_type,address,contract;
+    std::string query_type,contract;
+    std::vector<std::string> address_vec;
     int64_t start,end,step;
     std::cout << "==========decoded data==========" << std::endl;
+    bool no_start_blk = true;
+    bool no_end_blk = true;
     for (const auto& kv : params) {
-        std::cout << kv.first << ": " << kv.second << std::endl;
-        if (kv.first == "query_type"){
-            query_type = kv.second;
+        std::cout << kv.second << ": " << kv.first << std::endl;
+        if (kv.second == "query_type"){
+            query_type = kv.first;
         }
-        if(kv.first=="start_blk")
+        if(kv.second=="start_blk")
         {
-          start=std::atoi(kv.second.c_str());
-        }else if(kv.first=="end_blk")
+          no_start_blk = false;
+          start=std::atoi(kv.first.c_str());
+        }else if(kv.second=="end_blk")
         {
-          end=std::atoi(kv.second.c_str());
-        }else if(kv.first=="khop")
+          no_end_blk = false;
+          end=std::atoi(kv.first.c_str());
+        }else if(kv.second=="khop")
         {
-          step=std::atoi(kv.second.c_str());
-        }else if(kv.first=="address")
+          step=std::atoi(kv.first.c_str());
+        }else if(kv.second=="address")
         {
-          std::string tmp_add = kv.second.substr(2,40);
+          // std::cout << "address: " << kv.second << std::endl;
+          std::string tmp_add = kv.first.substr(2,40);
+          std::transform(tmp_add.begin(), tmp_add.end(), tmp_add.begin(), ::tolower);
           int64_t add=static_cast<int64_t>(leveldb::Hash(tmp_add.c_str(),tmp_add.size(),0xbc9f1d34));
-          address.append(8,'0');
+          std::string address = std::string(8, '0');
           memcpy(&address[0],reinterpret_cast<void*>(&add),sizeof(int64_t));
+          address_vec.emplace_back(address);
         }
+    }
+    if (no_start_blk) {
+      start = end;
+    }
+    if (no_end_blk) {
+      end = start;
     }
     std::cout << "=========================" << std::endl;
 
-    double elapsed_time = k_top(db,address,start,end,step);
+    clear_vec();
+
+    for (int i = 0; i < address_vec.size(); i++) {
+      double elapsed_time = k_top(db,address_vec[i],start,end,step);
+      queryResults.emplace_back(QueryResult(address_f[address_vec[i]], elapsed_time));
+    }
+    // double elapsed_time = k_top(db,address,start,end,step);
 
     // 构造HTTP响应
-    std::string response_json = get_edges_and_nodes();
-    std::cout<<response_json<<std::endl;
+    // std::string response_json = get_edges_and_nodes();
+    std::string response_json = get_edges_and_queryResults();
+    queryResults.clear();
+    
+    // std::cout<<response_json<<std::endl;
     std::string response_string = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(response_json.length()) + "\r\n\r\n" + response_json;
     boost::asio::write(socket, boost::asio::buffer(response_string));
   }
-  
+
+  clear_vec();
 
   delete db;
 }
@@ -581,8 +615,133 @@ void rambo_test(){
   }
   
 }
+/// @brief 
+/// @param account_path 账户文件路径
+/// @param edge_path 边文件路径
+/// @param db_name 数据库名称
+void create_db(std::string account_path, std::string edge_path, std::string db_name){
+  leveldb::DB* db=nullptr;
+  leveldb::Options opts;
+  opts.create_if_missing = true;
+  std::string db_path = "/eth_data/database/";
+  leveldb::Status s=leveldb::DB::Open(opts, db_path + db_name, &db);
+  leveldb::WriteBatch batch1;
+  std::string db_state;
+
+  solve_usdt(account_path);
+
+  std::ifstream readFile;
+  int64_t nownumber;
+  int64_t sum=0,sum_insert=0;
+  double sum_time=0,batch_time=0;
+  cnt=0;
+  // readFile.open("/eth_data/usdt/modified_data/16000000_16999999.csv",std::ios::in);
+  readFile.open(edge_path, std::ios::in);
+  if (readFile.is_open())
+	{
+    std::string str;
+		while (getline(readFile,str))
+		{
+      if(str.size()<30)
+      {
+        if(cnt!=0)
+        {
+          std::sort(tx+1,tx+cnt,cmp);
+          clock_t begin, end;
+          double ans;
+          begin = clock();
+          sum_insert+=generateblockWriteBatch(nownumber,batch1);
+          end = clock();
+          ans=double(end - begin) / CLOCKS_PER_SEC *1000;
+          batch_time+=ans;
+
+          begin = clock();
+          db->Write(leveldb::WriteOptions(),&batch1);
+          end = clock();
+          ans=double(end - begin) / CLOCKS_PER_SEC *1000;
+          sum_time+=ans;
+          sum+=cnt;
+        }
+        cnt=0;
+        batch1.Clear();
+        std::string blocknumber=str.substr(12,str.size()-12);
+        nownumber=std::atoi(blocknumber.c_str());
+        //printf("blocknumber: %d\n",nownumber);
+      }else{
+        std::string from=str.substr(2,40);
+        std::string to=str.substr(46,40);
+        
+        cnt++;
+        int64_t add=static_cast<int64_t>(leveldb::Hash(from.c_str(),from.size(),0xbc9f1d34));
+        std::string from_address;
+        from_address.append(8,'0');
+        memcpy(&from_address[0],reinterpret_cast<void*>(&add),sizeof(int64_t));
+
+        if(address_mp[from_address]==0)
+        {
+          mmp[from_address]=from;
+          address_mp[from_address]=1;
+        }
+        
+        add=static_cast<int64_t>(leveldb::Hash(to.c_str(),to.size(),0xbc9f1d34));
+        std::string to_address;
+        to_address.append(8,'0');
+        memcpy(&to_address[0],reinterpret_cast<void*>(&add),sizeof(int64_t));
+        if(address_mp[to_address]==0)
+        {
+          mmp[to_address]=to;
+          address_mp[to_address]=1;
+        }
+        tx[cnt].from_address=from_address;
+        tx[cnt].to_address=to_address;
+        tx[cnt].value=1;
+      }
+		}
+    if(cnt!=0)
+    {
+      std::sort(tx+1,tx+cnt,cmp);
+      clock_t begin, end;
+      double ans;
+      begin = clock();
+      sum_insert+=generateblockWriteBatch(nownumber,batch1);
+      end = clock();
+      ans=double(end - begin) / CLOCKS_PER_SEC *1000;
+      batch_time+=ans;
+      begin = clock();
+      db->Write(leveldb::WriteOptions(),&batch1);
+      end = clock();
+      ans=double(end - begin) / CLOCKS_PER_SEC *1000;
+      sum_time+=ans;
+      sum+=cnt;
+    }
+    cnt=0;
+    batch1.Clear();
+	}
+  readFile.close();
+  std::cout<<"1600-1700,交易总量: "<<sum<<" 生成batch时间: "<<batch_time<<" tps: "<<sum/batch_time*1000<<std::endl;
+  std::cout<<"总时长(batch): "<<sum_time+batch_time<<" ms 总写入数: "<<sum<<" tps: "<<(sum)/(sum_time+batch_time)*1000<<" op/s"<<std::endl;
+  std::cout<<"插入数据总量: "<<sum_insert<<" 写入时间(仅编码): "<<sum_time<<" tps: "<<sum_insert/sum_time*1000<<std::endl;
+  std::cout<<"初始化数量: "<<init_sum<<" 编码初始化时间: "<<init_time<<" tps: "<<init_sum/init_time*1000<<std::endl;
+  std::cout<<"交易总量: "<<add_sum<<" 编码添加时间: "<<add_time<<" tps: "<<add_sum/(add_time)*1000<<std::endl;
+  std::cout<<"交易总量: "<<sum<<" 写入+编码时间: "<<sum_time+init_time+add_time<<" tps: "<<sum/(sum_time+init_time+add_time)*1000<<std::endl;
+  
+}
 
 int main(int argc, char** argv) {
-  eth_dbTest();
+  // usdt数据库
+  std::string db_path = "/eth_data/database/usdt_1600_1700";
+  std::string account_path = "/eth_data/usdt/modified_data/account_16000000_16999999.txt";
+  eth_dbTest(db_path, account_path, 8030);
+
+
+  // eth数据库
+  // std::string db_path = "/eth_data/database/eth_1600_1700";
+  // std::string account_path = "/eth_data/eth/modified_data/account_16000000_16999999_new.csv";
+  // eth_dbTest(db_path, account_path, 8031);
+
+  // 创建数据库
+  // std::string account_path = "/eth_data/eth/modified_data/account_16000000_16999999_new.csv";
+  // std::string edge_path = "/eth_data/eth/modified_data/16000000_16999999_new.csv";
+  // create_db(account_path, edge_path, "eth_1600_1700");
   return 0;
 }

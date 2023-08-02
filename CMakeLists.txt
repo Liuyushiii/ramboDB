@@ -337,6 +337,7 @@ if(LEVELDB_BUILD_TESTS)
   endif(LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS)
 
   add_executable(leveldb_tests "")
+  
   target_sources(leveldb_tests
     PRIVATE
       # "db/fault_injection_test.cc"
